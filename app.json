@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "MASA Clone",
+    "slug": "masa-clone",
+    "version": "1.0.0",
+    "scheme": "masaclone",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1B4F72"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1B4F72"
+      },
+      "package": "com.masaclone.app"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ]
+  }
+}
