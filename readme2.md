@@ -11,9 +11,9 @@ Aplikasi ini dikembangkan oleh kelompok mahasiswa **Universitas Muhammadiyah Sur
 | Nama                         | NIM / Student ID | Peran / Kontribusi                 |
 | :--------------------------- | :--------------- | :--------------------------------- |
 | **Onic Agustino**            | `L200234275`     | Homepage, Prayer Feature, Bookmark |
-| **Mahardika Fatwa Ramadhan** | `L200248067`     | Quran and Surah Details            |
+| **Mahardika Fatwa Ramadhan** | `L200248067`     | Quran, Surah Details, and Documentation            |
 | **Guruh Widisaputra**        | `L200244058`     | EAS Build + Project Configuration  |
-| **Affan Ilham Arsyila**      | `L200234024`     | Authentication + Profile           |
+| **Affan Ilham Arsyila**      | `L200234024`     | Authentication, Profile, and Documentation           |
 
 _(Silakan lengkapi tabel di atas sesuai dengan pembagian tugas kelompok Anda)_
 
