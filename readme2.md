@@ -1,6 +1,6 @@
 # MASA App Clone - Dokumentasi Project (README)
 
-Aplikasi mobile **MASA App Clone** dirancang menggunakan **Expo** dan **React Native** untuk mereplikasi fitur utama dari aplikasi *MASA* (Muslim Lifestyle Application) yang dikembangkan oleh Muhammadiyah Software Labs. Aplikasi ini mencakup berbagai utilitas ibadah harian seperti jadwal salat, kompas kiblat, Al-Qur'an digital, kumpulan doa harian, kalender Hijriah beserta konverternya, dan manajemen akun pengguna.
+Aplikasi mobile **MASA App Clone** dirancang menggunakan **Expo** dan **React Native** untuk mereplikasi fitur utama dari aplikasi _MASA_ (Muslim Lifestyle Application) yang dikembangkan oleh Muhammadiyah Software Labs. Aplikasi ini mencakup berbagai utilitas ibadah harian seperti jadwal salat, kompas kiblat, Al-Qur'an digital, kumpulan doa harian, kalender Hijriah beserta konverternya, dan manajemen akun pengguna.
 
 ---
 
@@ -8,14 +8,14 @@ Aplikasi mobile **MASA App Clone** dirancang menggunakan **Expo** dan **React Na
 
 Aplikasi ini dikembangkan oleh kelompok mahasiswa **Universitas Muhammadiyah Surakarta (UMS)**:
 
-| Nama | NIM / Student ID | Peran / Kontribusi |
-| :--- | :--- | :--- |
-| **Onic Agustino** | `L200234275` | Lead Developer, App Architecture, API Integration, Auth Setup |
-| **Mahardika Fatwa Ramadhan** | `L200248067` | *[Kontribusi/Peran]* |
-| **Guruh Widisaputra** | `L200244058` | *[Kontribusi/Peran]* |
-| **Affan Ilham Arsyila** | `L200234024` | *[Kontribusi/Peran]* |
+| Nama                         | NIM / Student ID | Peran / Kontribusi                 |
+| :--------------------------- | :--------------- | :--------------------------------- |
+| **Onic Agustino**            | `L200234275`     | Homepage, Prayer Feature, Bookmark |
+| **Mahardika Fatwa Ramadhan** | `L200248067`     | Quran and Surah Details            |
+| **Guruh Widisaputra**        | `L200244058`     | EAS Build + Project Configuration  |
+| **Affan Ilham Arsyila**      | `L200234024`     | Authentication + Profile           |
 
-*(Silakan lengkapi tabel di atas sesuai dengan pembagian tugas kelompok Anda)*
+_(Silakan lengkapi tabel di atas sesuai dengan pembagian tugas kelompok Anda)_
 
 ---
 
@@ -31,8 +31,8 @@ Aplikasi ini mendukung mode **Online Autentikasi** menggunakan **Clerk** maupun 
 
 Berikut adalah tampilan antarmuka dari beberapa halaman utama aplikasi MASA App Clone:
 
-| Bookmark | Kalender | Konverter Kalender | Profil |
-| :---: | :---: | :---: | :---: |
+|                 Bookmark                 |                 Kalender                 |                          Konverter Kalender                          |                Profil                 |
+| :--------------------------------------: | :--------------------------------------: | :------------------------------------------------------------------: | :-----------------------------------: |
 | ![Bookmark](documentation/bookmark.jpeg) | ![Kalender](documentation/calendar.jpeg) | ![Konverter Kalender](<documentation/calendar-converter.jpeg .jpeg>) | ![Profil](documentation/profile.jpeg) |
 
 ---
@@ -42,7 +42,7 @@ Berikut adalah tampilan antarmuka dari beberapa halaman utama aplikasi MASA App 
 Berikut adalah fitur utama yang berhasil diintegrasikan di dalam aplikasi:
 
 1. **Dashboard Utama (Beranda)**
-   - Greeting dinamis menyesuaikan status login pengguna (*"Assalamualaikum [Nama]"* atau *"Assalamualaikum Tamu"*).
+   - Greeting dinamis menyesuaikan status login pengguna (_"Assalamualaikum [Nama]"_ atau _"Assalamualaikum Tamu"_).
    - Widget Salat Premium dengan countdown real-time ke jadwal salat berikutnya serta ilustrasi grafis lintasan matahari & awan.
    - Pilihan lokasi jadwal salat yang dapat disesuaikan secara manual maupun otomatis menggunakan GPS.
    - Widget Kalender Islam & Masehi yang dapat ditoggle secara instan.
@@ -117,6 +117,7 @@ Aplikasi ini menggunakan **Clerk Expo** sebagai penyedia layanan autentikasi uta
 ```
 
 ### Rincian Flow Autentikasi:
+
 1. **Pendaftaran Akun (Sign Up)**:
    - Pengguna memasukkan Email, Username, Nomor Telepon, dan Password.
    - **Penanganan Nomor Telepon**: Terdapat validasi E.164. Karena Clerk test tier terkadang membatasi kode negara Indonesia (+62), sistem secara otomatis memetakan nomor telepon Indonesia ke nomor simulasi test-tier Amerika Serikat (`+120255501XX`) secara aman di background.
@@ -125,7 +126,7 @@ Aplikasi ini menggunakan **Clerk Expo** sebagai penyedia layanan autentikasi uta
    - Login konvensional menggunakan email & password.
    - **Google OAuth**: Mendukung login satu klik menggunakan akun Google. Memanfaatkan `expo-web-browser` dan `expo-linking` untuk menghandle siklus redirect autentikasi secara native.
 3. **Mock Mode (Fallback)**:
-   - Apabila Clerk Publishable Key (`EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`) tidak dideklarasikan di file `.env`, aplikasi akan mengaktifkan *Mock Mode*.
+   - Apabila Clerk Publishable Key (`EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`) tidak dideklarasikan di file `.env`, aplikasi akan mengaktifkan _Mock Mode_.
    - Semua fungsi sign-in, sign-up, dan sign-out disimulasikan menggunakan penyimpanan lokal `AsyncStorage` dengan key `mock_signed_in`.
    - Mengizinkan tester membuka seluruh halaman terproteksi dengan kredensial dummy apapun.
 
@@ -152,18 +153,23 @@ Aplikasi ini memanfaatkan beberapa API dan pustaka eksternal untuk menyajikan da
 Ikuti langkah-langkah di bawah ini untuk menjalankan project di komputer Anda:
 
 ### 1. Prasyarat
+
 Pastikan komputer Anda sudah terinstal:
+
 - **Node.js** (versi 18 atau yang lebih baru)
 - **Git**
 - Aplikasi **Expo Go** pada ponsel fisik Anda (tersedia di Play Store & App Store), atau Emulator Android Studio / Xcode Simulator yang sudah terkonfigurasi.
 
 ### 2. Instalasi Dependensi
+
 Clone repository ini, masuk ke direktori project, lalu jalankan instalasi package via NPM:
+
 ```bash
 npm install
 ```
 
 ### 3. Konfigurasi Environment Variables
+
 1. Copy file `.env.example` menjadi `.env` di root direktori project:
    ```bash
    cp .env.example .env
@@ -172,20 +178,26 @@ npm install
    ```env
    EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_publishable_key
    ```
-   *(Bila dibiarkan default/kosong, aplikasi secara otomatis berjalan menggunakan Mock Mode)*
+   _(Bila dibiarkan default/kosong, aplikasi secara otomatis berjalan menggunakan Mock Mode)_
 
 ### 4. Menjalankan Development Server
+
 Mulai server Expo development dengan menjalankan perintah:
+
 ```bash
 npm run start
 ```
+
 Atau menggunakan CLI Expo langsung:
+
 ```bash
 npx expo start
 ```
 
 ### 5. Membuka Aplikasi
+
 Setelah terminal menampilkan QR Code:
+
 - **Ponsel Android**: Buka aplikasi **Expo Go**, lalu pilih menu **Scan QR Code**.
 - **Ponsel iOS**: Buka aplikasi kamera bawaan iOS, arahkan ke QR Code di terminal, lalu klik tautan Expo Go yang muncul.
 - **Emulator/Simulator**: Tekan tombol `a` di terminal untuk membuka Android Emulator, atau tekan `i` untuk iOS Simulator.
@@ -197,25 +209,33 @@ Setelah terminal menampilkan QR Code:
 EAS Build adalah layanan cloud dari Expo untuk mengompilasi kode React Native menjadi file biner standalone (APK/AAB untuk Android dan IPA untuk iOS).
 
 ### 1. Instalasi EAS CLI secara Global
+
 Pasang utilitas EAS CLI pada komputer Anda:
+
 ```bash
 npm install -g eas-cli
 ```
 
 ### 2. Login ke Akun Expo
+
 Masuk menggunakan akun Expo Anda (daftarkan diri terlebih dahulu di [expo.dev](https://expo.dev/) jika belum punya):
+
 ```bash
 eas login
 ```
 
 ### 3. Konfigurasi Project untuk EAS
+
 Inisialisasi EAS pada project Anda (ini akan meminta Anda memilih akun/organisasi serta membuat file konfigurasi `eas.json` di root folder):
+
 ```bash
 eas build:configure
 ```
 
 ### 4. Contoh Konfigurasi `eas.json` yang Direkomendasikan
-Pastikan isi file `eas.json` Anda mencakup profil *preview* (untuk menghasilkan APK) dan *production*:
+
+Pastikan isi file `eas.json` Anda mencakup profil _preview_ (untuk menghasilkan APK) dan _production_:
+
 ```json
 {
   "cli": {
@@ -241,6 +261,7 @@ Pastikan isi file `eas.json` Anda mencakup profil *preview* (untuk menghasilkan 
 ```
 
 ### 5. Menjalankan Build Standalone
+
 Jalankan kompilasi pada server cloud Expo dengan perintah berikut:
 
 - **Build Android APK (Preview/Installable)**:
@@ -256,7 +277,7 @@ Jalankan kompilasi pada server cloud Expo dengan perintah berikut:
   eas build --platform all --profile production
   ```
 
-*Catatan: Proses kompilasi cloud biasanya membutuhkan waktu 5-15 menit tergantung antrean server Expo.*
+_Catatan: Proses kompilasi cloud biasanya membutuhkan waktu 5-15 menit tergantung antrean server Expo._
 
 ---
 
@@ -265,17 +286,19 @@ Jalankan kompilasi pada server cloud Expo dengan perintah berikut:
 Setelah proses EAS Build selesai, Anda dapat mengunduh dan memasang aplikasi tersebut di ponsel dengan metode berikut:
 
 ### 1. Unduh Melalui Link Dashboard Expo
+
 1. Di akhir proses EAS Build di terminal, Anda akan diberikan sebuah tautan web (misalnya: `https://expo.dev/artifacts/eas/...`).
 2. Buka link tersebut di browser komputer atau ponsel Anda.
 3. Klik tombol **Download** untuk mengunduh file biner:
    - **Android**: File `.apk` (Preview) atau `.aab` (Production).
-   - **iOS**: Tautan instalasi *Ad-Hoc / TestFlight*.
-   
+   - **iOS**: Tautan instalasi _Ad-Hoc / TestFlight_.
+
 ### 2. Instalasi Melalui QR Code (Sangat Direkomendasikan)
+
 1. Setelah build selesai, terminal atau halaman dashboard Expo akan memunculkan sebuah **QR Code instalasi**.
 2. Scan QR Code tersebut menggunakan kamera ponsel Anda.
 3. Anda akan diarahkan ke halaman web Expo untuk mengunduh aplikasi secara langsung ke ponsel.
 4. **Android (Khusus APK)**:
    - Setelah file `.apk` selesai diunduh, buka file tersebut.
-   - Jika muncul peringatan keamanan *"Blocked by Play Protect"* atau *"Install from Unknown Sources"*, pilih **Install Anyway** / Izinkan instalasi dari sumber tidak dikenal.
+   - Jika muncul peringatan keamanan _"Blocked by Play Protect"_ atau _"Install from Unknown Sources"_, pilih **Install Anyway** / Izinkan instalasi dari sumber tidak dikenal.
    - Aplikasi kini terpasang secara permanen di ponsel Anda dan dapat dijalankan secara mandiri tanpa terhubung ke komputer/development server.
