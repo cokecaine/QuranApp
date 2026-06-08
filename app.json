@@ -1,5 +1,6 @@
 {
   "expo": {
+<<<<<<< HEAD
     "name": "MASA Clone",
     "slug": "masa-clone-boluketan",
     "version": "1.0.0",
@@ -11,6 +12,18 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.boluketan.masaclone"
+=======
+    "name": "temp-app",
+    "slug": "temp-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "tempapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+>>>>>>> develop
     },
     "android": {
       "package": "com.boluketan.masaclone",
@@ -46,12 +59,15 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+<<<<<<< HEAD
     },
     "extra": {
       "router": {},
       "eas": {
         "projectId": "ac1f44d5-fdd0-4cf3-9160-57521d38199d"
       }
+=======
+>>>>>>> develop
     }
   }
 }
