@@ -27,6 +27,16 @@ Aplikasi ini mendukung mode **Online Autentikasi** menggunakan **Clerk** maupun 
 
 ---
 
+## 📸 Screenshots Aplikasi
+
+Berikut adalah tampilan antarmuka dari beberapa halaman utama aplikasi MASA App Clone:
+
+| Bookmark | Kalender | Konverter Kalender | Profil |
+| :---: | :---: | :---: | :---: |
+| ![Bookmark](documentation/bookmark.jpeg) | ![Kalender](documentation/calendar.jpeg) | ![Konverter Kalender](<documentation/calendar-converter.jpeg .jpeg>) | ![Profil](documentation/profile.jpeg) |
+
+---
+
 ## ✨ Fitur-Fitur yang Diimplementasikan
 
 Berikut adalah fitur utama yang berhasil diintegrasikan di dalam aplikasi:
