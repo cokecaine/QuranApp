@@ -13,7 +13,7 @@ Aplikasi ini dikembangkan oleh kelompok mahasiswa **Universitas Muhammadiyah Sur
 | **Onic Agustino** | `L200234275` | Lead Developer, App Architecture, API Integration, Auth Setup |
 | **Mahardika Fatwa Ramadhan** | `L200248067` | *[Kontribusi/Peran]* |
 | **Guruh Widisaputra** | `L200244058` | *[Kontribusi/Peran]* |
-| *[Nama Anggota 4]* | `[NIM Anggota 4]` | *[Kontribusi/Peran]* |
+| **Affan Ilham Arsyila** | `L200234024` | *[Kontribusi/Peran]* |
 
 *(Silakan lengkapi tabel di atas sesuai dengan pembagian tugas kelompok Anda)*
 
