@@ -139,16 +139,18 @@ export default function QuranScreen() {
       />
 
       {/* Search Bar */}
-      <Input
-        placeholder="Search Surah..."
-        value={searchQuery}
-        onChangeText={handleSearch}
-        clearButtonMode="while-editing"
-        leftIcon={<Ionicons name="search-outline" size={20} color="#8E8E93" />}
-        containerStyle={{ marginHorizontal: 20, marginVertical: 12, marginBottom: 0 }}
-        wrapperStyle={{ backgroundColor: "#FFFFFF", height: 48, borderRadius: 12, borderWidth: 1, borderColor: "#E5E5EA" }}
-        inputStyle={styles.searchInput}
-      />
+      <View style={{ marginHorizontal: 20, marginVertical: 12, marginBottom: 0 }}>
+        <Input
+          placeholder="Search Surah..."
+          value={searchQuery}
+          onChangeText={handleSearch}
+          clearButtonMode="while-editing"
+          leftIcon={<Ionicons name="search-outline" size={20} color="#8E8E93" />}
+          containerStyle={{ marginBottom: 0 }}
+          wrapperStyle={{ backgroundColor: "#FFFFFF", height: 48, borderRadius: 12, borderWidth: 1, borderColor: "#E5E5EA" }}
+          inputStyle={styles.searchInput}
+        />
+      </View>
 
       {/* Surah List */}
       <FlatList
@@ -214,6 +216,7 @@ const styles = StyleSheet.create({
     paddingBottom: 110,
   },
   surahCard: {
+    height: "auto",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
