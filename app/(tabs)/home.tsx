@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   StyleSheet,
   Text,
   View,
   ScrollView,
   TouchableOpacity,
-  Image,
   SafeAreaView,
   StatusBar,
   Dimensions,
   Platform,
-  Alert,
+  Modal,
+  ActivityIndicator,
+  FlatList,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -18,17 +19,24 @@ import { useRouter } from "expo-router";
 import { Card } from "@/components/ui/card";
 import { useAppAuth, hasClerkKey } from "@/hooks/use-app-auth";
 import { useUser } from "@clerk/clerk-expo";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Location from "expo-location";
-import { Modal, ActivityIndicator } from "react-native";
+import { useSalatSchedule } from "@/hooks/use-salat-schedule";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-interface PrayerTime {
+interface PrayerDisplayItem {
+  key: string;
   name: string;
-  time: string;
   icon: keyof typeof Ionicons.glyphMap;
 }
+
+const PRAYER_DISPLAY: PrayerDisplayItem[] = [
+  { key: "subuh",   name: "Subuh",   icon: "cloudy-night-outline" },
+  { key: "terbit",  name: "Terbit",  icon: "sunny-outline" },
+  { key: "dzuhur", name: "Dzuhur",  icon: "sunny" },
+  { key: "ashar",   name: "Ashar",   icon: "partly-sunny-outline" },
+  { key: "maghrib", name: "Maghrib", icon: "sunny-outline" },
+  { key: "isya",    name: "Isya",    icon: "moon-outline" },
+];
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -37,181 +45,119 @@ export default function HomeScreen() {
   const user = clerkUser.user;
   const userName = isSignedIn ? (user?.firstName || "Onic") : "Tamu";
 
-  // 6 Islamic Prayer Times
-  const prayerTimes: PrayerTime[] = [
-    { name: "Subuh", time: "04:30", icon: "cloudy-night-outline" },
-    { name: "Terbit", time: "05:41", icon: "sunny-outline" },
-    { name: "Zuhur", time: "11:36", icon: "sunny" },
-    { name: "Asar", time: "14:57", icon: "partly-sunny-outline" },
-    { name: "Magrib", time: "17:28", icon: "sunny-outline" },
-    { name: "Isya", time: "18:41", icon: "moon-outline" },
-  ];
+  const {
+    provinsi,
+    kabkota,
+    saveLocation,
+    provinces,
+    cities,
+    loadProvinces,
+    loadCities,
+    loadingProvinces,
+    loadingCities,
+    detectGPSLocation,
+    gpsLoading,
+    getScheduleForDate,
+    loadingSchedule,
+  } = useSalatSchedule();
 
-  const [timeLeft, setTimeLeft] = useState("00:08:40");
-  const [nextPrayer, setNextPrayer] = useState("Magrib");
-  const [islamicDate, setIslamicDate] = useState("19 Zulhijah 1447");
-  const [gregorianDate, setGregorianDate] = useState("Jumat, 5 Juni 2026");
+  // Derive today's prayer times from the hook
+  const todaySchedule = getScheduleForDate(new Date());
+  const prayerTimes = todaySchedule
+    ? PRAYER_DISPLAY.map((p) => ({
+        name: p.name,
+        time: (todaySchedule as any)[p.key] as string,
+        icon: p.icon,
+      }))
+    : [];
+
+  const [timeLeft, setTimeLeft] = useState("--:--:--");
+  const [nextPrayer, setNextPrayer] = useState("");
+  const [islamicDate, setIslamicDate] = useState("");
+  const [gregorianDate, setGregorianDate] = useState("");
   const [showHijri, setShowHijri] = useState(true);
-  const [location, setLocation] = useState("Kabupaten Sukoharjo");
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [gpsLoading, setGpsLoading] = useState(false);
+  const [pickerStep, setPickerStep] = useState<"province" | "city">("province");
+  const [tempProvinsi, setTempProvinsi] = useState(provinsi);
 
-  const manualCities = [
-    "Kabupaten Sukoharjo",
-    "Kota Surakarta",
-    "Kabupaten Karanganyar",
-    "Kota Yogyakarta",
-    "DKI Jakarta",
-    "Kota Bandung",
-    "Kota Surabaya",
-  ];
+  const toggleDateFormat = () => setShowHijri((prev) => !prev);
 
-  const toggleDateFormat = () => {
-    setShowHijri((prev) => !prev);
-  };
+  const openLocationPicker = useCallback(async () => {
+    setTempProvinsi(provinsi);
+    setPickerStep("province");
+    setShowLocationModal(true);
+    await loadProvinces();
+  }, [provinsi, loadProvinces]);
 
-  const selectManualLocation = async (city: string) => {
-    setLocation(city);
-    await AsyncStorage.setItem("user_location", city);
-    setShowLocationModal(false);
-    Alert.alert("Lokasi Diperbarui", `Jadwal salat telah disesuaikan dengan wilayah ${city}.`);
-  };
+  const selectProvinsi = useCallback(
+    async (p: string) => {
+      setTempProvinsi(p);
+      setPickerStep("city");
+      await loadCities(p);
+    },
+    [loadCities]
+  );
 
-  const handleGPSLocation = async () => {
-    setGpsLoading(true);
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Izin Lokasi Ditolak",
-          "Aplikasi membutuhkan izin akses lokasi untuk menentukan wilayah Anda secara otomatis."
-        );
-        return;
-      }
+  const selectKabkota = useCallback(
+    async (kk: string) => {
+      await saveLocation(tempProvinsi, kk);
+      setShowLocationModal(false);
+    },
+    [tempProvinsi, saveLocation]
+  );
 
-      const currentLoc = await Location.getCurrentPositionAsync({});
-      const geocode = await Location.reverseGeocodeAsync({
-        latitude: currentLoc.coords.latitude,
-        longitude: currentLoc.coords.longitude,
-      });
-
-      if (geocode && geocode.length > 0) {
-        const address = geocode[0];
-        const detectedCity = address.subregion || address.city || address.district || address.region || "Kabupaten Sukoharjo";
-        setLocation(detectedCity);
-        await AsyncStorage.setItem("user_location", detectedCity);
-        setShowLocationModal(false);
-        Alert.alert("Lokasi Otomatis Aktif", `Lokasi Anda berhasil diatur ke: ${detectedCity}`);
-      } else {
-        throw new Error("Gagal mendapatkan nama wilayah.");
-      }
-    } catch (err) {
-      console.warn("GPS Location error:", err);
-      Alert.alert(
-        "GPS Gagal",
-        "Gagal mendapatkan lokasi GPS Anda. Silakan pilih lokasi secara manual."
-      );
-    } finally {
-      setGpsLoading(false);
-    }
-  };
-
+  // ── Dates ─────────────────────────────────────────────────────────────────
   useEffect(() => {
-    // Load saved location on mount
-    AsyncStorage.getItem("user_location")
-      .then((savedLoc) => {
-        if (savedLoc) setLocation(savedLoc);
-      })
-      .catch(() => {});
-
-    // Dynamic Hijri Date calculation (matches salat.tsx algorithm)
     const getIslamicDate = (date: Date) => {
-      const baseDate = new Date(2026, 5, 3); // 3 June 2026 is 17 Zulhijah 1447
-      const diffTime = date.getTime() - baseDate.getTime();
-      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
+      const baseDate = new Date(2026, 5, 3);
+      const diffDays = Math.round((date.getTime() - baseDate.getTime()) / 86400000);
       let hijriDay = 17 + diffDays;
       let hijriMonth = "Zulhijah";
       let hijriYear = 1447;
-
-      if (hijriDay > 30) {
-        hijriDay = hijriDay - 30;
-        hijriMonth = "Muharam";
-        hijriYear = 1448;
-      } else if (hijriDay <= 0) {
-        hijriDay = 29 + hijriDay;
-        hijriMonth = "Zulkaidah";
-      }
-
+      if (hijriDay > 30) { hijriDay -= 30; hijriMonth = "Muharam"; hijriYear = 1448; }
+      else if (hijriDay <= 0) { hijriDay = 29 + hijriDay; hijriMonth = "Zulkaidah"; }
       return `${hijriDay} ${hijriMonth} ${hijriYear}`;
     };
-
     const getGregorianDate = (date: Date) => {
       const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-      const months = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-      ];
-      const dayName = days[date.getDay()];
-      const day = date.getDate();
-      const monthName = months[date.getMonth()];
-      const year = date.getFullYear();
-      return `${dayName}, ${day} ${monthName} ${year}`;
+      const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     };
-
     const today = new Date();
     setIslamicDate(getIslamicDate(today));
     setGregorianDate(getGregorianDate(today));
+  }, []);
+
+  // ── Countdown (recalculates whenever prayer times change from API) ─────────
+  useEffect(() => {
+    if (prayerTimes.length === 0) return;
 
     const updateCountdown = () => {
       const now = new Date();
-      const currentHours = now.getHours();
-      const currentMinutes = now.getMinutes();
-      const currentSeconds = now.getSeconds();
-      const currentTotalSeconds = currentHours * 3600 + currentMinutes * 60 + currentSeconds;
-
-      // Find the next prayer time
+      const currentSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
       let next = prayerTimes[0];
-      let nextTotalSeconds = 0;
+      let nextSec = 0;
       let found = false;
-
-      for (let i = 0; i < prayerTimes.length; i++) {
-        const [pHours, pMinutes] = prayerTimes[i].time.split(":").map(Number);
-        const pTotalSeconds = pHours * 3600 + pMinutes * 60;
-        if (pTotalSeconds > currentTotalSeconds) {
-          next = prayerTimes[i];
-          nextTotalSeconds = pTotalSeconds;
-          found = true;
-          break;
-        }
+      for (const p of prayerTimes) {
+        const [h, m] = p.time.split(":").map(Number);
+        const pSec = h * 3600 + m * 60;
+        if (pSec > currentSec) { next = p; nextSec = pSec; found = true; break; }
       }
-
-      // If no prayer time is left today, next prayer is Subuh of tomorrow
       if (!found) {
-        const [pHours, pMinutes] = prayerTimes[0].time.split(":").map(Number);
-        nextTotalSeconds = (pHours + 24) * 3600 + pMinutes * 60;
+        const [h, m] = prayerTimes[0].time.split(":").map(Number);
+        nextSec = (h + 24) * 3600 + m * 60;
         next = prayerTimes[0];
       }
-
-      const diffSeconds = nextTotalSeconds - currentTotalSeconds;
-      const hours = Math.floor(diffSeconds / 3600);
-      const minutes = Math.floor((diffSeconds % 3600) / 60);
-      const seconds = diffSeconds % 60;
-
-      const formatted = [
-        hours.toString().padStart(2, "0"),
-        minutes.toString().padStart(2, "0"),
-        seconds.toString().padStart(2, "0"),
-      ].join(":");
-
-      setTimeLeft(formatted);
+      const diff = nextSec - currentSec;
+      setTimeLeft([Math.floor(diff / 3600), Math.floor((diff % 3600) / 60), diff % 60]
+        .map((v) => v.toString().padStart(2, "0")).join(":"));
       setNextPrayer(next.name);
     };
 
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [prayerTimes.map((p) => p.time).join(",")]);
 
   // Features Grid Data (8 items)
   const menuFeatures = [
@@ -285,9 +231,10 @@ export default function HomeScreen() {
               <TouchableOpacity
                 style={styles.locationButton}
                 activeOpacity={0.8}
-                onPress={() => setShowLocationModal(true)}
+                onPress={openLocationPicker}
               >
-                <Text style={styles.locationText} numberOfLines={1}>{location}</Text>
+                <Ionicons name="location-outline" size={11} color="#FFFFFF" style={{ marginRight: 3 }} />
+                <Text style={styles.locationText} numberOfLines={1}>{kabkota}</Text>
                 <Ionicons name="chevron-forward" size={14} color="#FFFFFF" style={styles.locationIcon} />
               </TouchableOpacity>
               <TouchableOpacity onPress={toggleDateFormat} activeOpacity={0.75}>
@@ -300,17 +247,20 @@ export default function HomeScreen() {
             {/* Countdown layout */}
             <View style={styles.countdownRow}>
               <View style={styles.countdownLeft}>
-                <Text style={styles.timerText}>{timeLeft}</Text>
-                <Text style={styles.timerSubtitle}>Waktu tersisa sebelum salat {nextPrayer}</Text>
+                {loadingSchedule ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.timerText}>{timeLeft}</Text>
+                )}
+                <Text style={styles.timerSubtitle}>
+                  {nextPrayer ? `Waktu tersisa sebelum salat ${nextPrayer}` : "Memuat jadwal…"}
+                </Text>
               </View>
 
               {/* Weather Graphic (Sun path & Cloud) */}
               <View style={styles.weatherContainer}>
-                {/* Dashed sun path arc */}
                 <View style={styles.dashedArc} />
-                {/* Sun */}
                 <View style={styles.sunGraphic} />
-                {/* Cloud */}
                 <Ionicons name="cloud" size={44} color="rgba(255,255,255,0.7)" style={styles.cloudGraphic} />
               </View>
             </View>
@@ -318,18 +268,24 @@ export default function HomeScreen() {
             {/* Prayer Times Row */}
             <View style={styles.prayerTimesDivider} />
             <View style={styles.prayerTimesRow}>
-              {prayerTimes.map((item, idx) => {
-                const isUpcoming = item.name === nextPrayer;
-                return (
-                  <View key={idx} style={[styles.prayerItem, isUpcoming && styles.prayerItemActive]}>
-                    <View style={[styles.prayerIconContainer, isUpcoming && styles.prayerIconActive]}>
-                      <Ionicons name={item.icon} size={18} color="#FFFFFF" />
+              {prayerTimes.length === 0 && !loadingSchedule ? (
+                <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, textAlign: "center", flex: 1 }}>
+                  Pilih lokasi untuk melihat jadwal
+                </Text>
+              ) : (
+                prayerTimes.map((item, idx) => {
+                  const isUpcoming = item.name === nextPrayer;
+                  return (
+                    <View key={idx} style={[styles.prayerItem, isUpcoming && styles.prayerItemActive]}>
+                      <View style={[styles.prayerIconContainer, isUpcoming && styles.prayerIconActive]}>
+                        <Ionicons name={item.icon as any} size={18} color="#FFFFFF" />
+                      </View>
+                      <Text style={styles.prayerTimeText}>{item.time}</Text>
+                      <Text style={styles.prayerLabelText}>{item.name}</Text>
                     </View>
-                    <Text style={styles.prayerTimeText}>{item.time}</Text>
-                    <Text style={styles.prayerLabelText}>{item.name}</Text>
-                  </View>
-                );
-              })}
+                  );
+                })
+              )}
             </View>
           </LinearGradient>
         </View>
@@ -394,67 +350,104 @@ export default function HomeScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            {/* Handle bar */}
             <View style={styles.modalHandle} />
 
-            <Text style={styles.modalTitle}>Pilih Lokasi</Text>
-            <Text style={styles.modalSubtitle}>
-              Tentukan wilayah Anda untuk menyesuaikan jadwal waktu salat
-            </Text>
-
-            {/* GPS Option */}
-            <TouchableOpacity
-              style={[styles.gpsButton, gpsLoading && styles.gpsButtonLoading]}
-              onPress={handleGPSLocation}
-              disabled={gpsLoading}
-              activeOpacity={0.8}
-            >
-              {gpsLoading ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <>
-                  <Ionicons name="location" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-                  <Text style={styles.gpsButtonText}>Gunakan Lokasi Saat Ini (GPS)</Text>
-                </>
+            {/* Header row */}
+            <View style={styles.modalHeader}>
+              {pickerStep === "city" && (
+                <TouchableOpacity onPress={() => setPickerStep("province")} style={styles.backBtn}>
+                  <Ionicons name="chevron-back" size={22} color="#0E153A" />
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
-
-            <View style={styles.modalDividerContainer}>
-              <View style={styles.modalDividerLine} />
-              <Text style={styles.modalDividerText}>atau pilih manual</Text>
-              <View style={styles.modalDividerLine} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.modalTitle}>
+                  {pickerStep === "province" ? "Pilih Provinsi" : "Pilih Kabupaten / Kota"}
+                </Text>
+                {pickerStep === "city" && (
+                  <Text style={styles.modalSubtitle}>{tempProvinsi}</Text>
+                )}
+              </View>
+              <TouchableOpacity onPress={() => setShowLocationModal(false)} style={styles.closeBtn}>
+                <Ionicons name="close" size={22} color="#8E8E93" />
+              </TouchableOpacity>
             </View>
 
-            {/* Manual cities list */}
-            <ScrollView style={styles.cityList} showsVerticalScrollIndicator={false}>
-              {manualCities.map((city) => {
-                const isSelected = city === location;
-                return (
-                  <TouchableOpacity
-                    key={city}
-                    style={[styles.cityItem, isSelected && styles.cityItemActive]}
-                    onPress={() => selectManualLocation(city)}
-                    activeOpacity={0.6}
-                  >
-                    <Text style={[styles.cityItemText, isSelected && styles.cityItemTextActive]}>
-                      {city}
-                    </Text>
-                    {isSelected && (
-                      <Ionicons name="checkmark" size={18} color="#2F58E8" />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
+            {/* GPS Button — only shown on province step */}
+            {pickerStep === "province" && (
+              <TouchableOpacity
+                style={[styles.gpsButton, gpsLoading && styles.gpsButtonLoading]}
+                onPress={async () => {
+                  const success = await detectGPSLocation();
+                  if (success) setShowLocationModal(false);
+                }}
+                disabled={gpsLoading}
+                activeOpacity={0.8}
+              >
+                {gpsLoading ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Ionicons name="location" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.gpsButtonText}>Deteksi Lokasi Otomatis (GPS)</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
 
-            {/* Close Button */}
-            <TouchableOpacity
-              style={styles.closeModalButton}
-              onPress={() => setShowLocationModal(false)}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.closeModalButtonText}>Batal</Text>
-            </TouchableOpacity>
+            {/* Province list */}
+            {pickerStep === "province" ? (
+              loadingProvinces ? (
+                <View style={styles.pickerLoading}>
+                  <ActivityIndicator size="large" color="#2F58E8" />
+                  <Text style={styles.pickerLoadingText}>Memuat provinsi…</Text>
+                </View>
+              ) : (
+                <FlatList
+                  data={provinces}
+                  keyExtractor={(item) => item}
+                  style={styles.cityList}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={({ item }) => {
+                    const isSelected = item === provinsi;
+                    return (
+                      <TouchableOpacity
+                        style={[styles.cityItem, isSelected && styles.cityItemActive]}
+                        onPress={() => selectProvinsi(item)}
+                        activeOpacity={0.6}
+                      >
+                        <Text style={[styles.cityItemText, isSelected && styles.cityItemTextActive]}>{item}</Text>
+                        {isSelected && <Ionicons name="checkmark" size={18} color="#2F58E8" />}
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+              )
+            ) : loadingCities ? (
+              <View style={styles.pickerLoading}>
+                <ActivityIndicator size="large" color="#2F58E8" />
+                <Text style={styles.pickerLoadingText}>Memuat kota…</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={cities}
+                keyExtractor={(item) => item}
+                style={styles.cityList}
+                showsVerticalScrollIndicator={false}
+                renderItem={({ item }) => {
+                  const isSelected = item === kabkota && tempProvinsi === provinsi;
+                  return (
+                    <TouchableOpacity
+                      style={[styles.cityItem, isSelected && styles.cityItemActive]}
+                      onPress={() => selectKabkota(item)}
+                      activeOpacity={0.6}
+                    >
+                      <Text style={[styles.cityItemText, isSelected && styles.cityItemTextActive]}>{item}</Text>
+                      {isSelected && <Ionicons name="checkmark" size={18} color="#2F58E8" />}
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -786,59 +779,39 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 16,
   },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  backBtn: {
+    marginRight: 8,
+    padding: 4,
+  },
+  closeBtn: {
+    padding: 4,
+  },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#0E153A",
-    textAlign: "center",
   },
   modalSubtitle: {
-    fontSize: 13,
-    color: "#8E8E93",
-    textAlign: "center",
-    marginTop: 6,
-    marginBottom: 20,
-    lineHeight: 18,
-  },
-  gpsButton: {
-    flexDirection: "row",
-    backgroundColor: "#2F58E8",
-    height: 50,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#2F58E8",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  gpsButtonLoading: {
-    backgroundColor: "#7D9DFF",
-  },
-  gpsButtonText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "bold",
-  },
-  modalDividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  modalDividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#F2F2F7",
-  },
-  modalDividerText: {
-    marginHorizontal: 12,
-    color: "#8E8E93",
     fontSize: 12,
-    fontWeight: "500",
+    color: "#8E8E93",
+    marginTop: 2,
+  },
+  pickerLoading: {
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  pickerLoadingText: {
+    color: "#8E8E93",
+    fontSize: 14,
+    marginTop: 8,
   },
   cityList: {
-    maxHeight: 250,
+    maxHeight: 380,
   },
   cityItem: {
     flexDirection: "row",
@@ -855,23 +828,32 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#1C1C1E",
     fontWeight: "500",
+    flex: 1,
   },
   cityItemTextActive: {
     color: "#2F58E8",
     fontWeight: "bold",
   },
-  closeModalButton: {
-    height: 50,
+  gpsButton: {
+    flexDirection: "row",
+    backgroundColor: "#2F58E8",
+    height: 48,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: "#E5E5EA",
+    marginBottom: 16,
+    shadowColor: "#2F58E8",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  closeModalButtonText: {
-    color: "#8E8E93",
-    fontSize: 15,
-    fontWeight: "600",
+  gpsButtonLoading: {
+    backgroundColor: "#7D9DFF",
+  },
+  gpsButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
   },
 });

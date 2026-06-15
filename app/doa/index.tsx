@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -12,68 +12,208 @@ import {
   TextInput,
   FlatList,
   Modal,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { DOA_CATEGORIES, DoaItem } from "../../constants/doa-data";
 import { Header } from "@/components/ui/header";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const BASE_URL = "https://equran.id/api/doa";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export interface DoaItem {
+  id: number;
+  grup: string;
+  nama: string;
+  ar: string;
+  tr: string;
+  idn: string;
+  tentang?: string;
+  tag?: string[];
+}
+
+interface DoaGroup {
+  grup: string;
+  icon: string;
+  items: DoaItem[];
+}
+
+// ─── Icon mapping ─────────────────────────────────────────────────────────────
+
+const GROUP_ICONS: Record<string, string> = {
+  "Doa Sebelum dan Sesudah Tidur": "moon-outline",
+  "Doa Ketika Bangun Tidur": "sunny-outline",
+  "Doa Masuk dan Keluar Kamar Mandi": "water-outline",
+  "Doa Makan dan Minum": "restaurant-outline",
+  "Doa Bepergian": "car-outline",
+  "Doa Masuk dan Keluar Masjid": "business-outline",
+  "Doa Pagi dan Petang": "partly-sunny-outline",
+  "Doa Keselamatan": "shield-checkmark-outline",
+  "Doa Memohon Ampun": "hand-left-outline",
+  "Doa Kesehatan": "heart-outline",
+  "Doa Belajar dan Ilmu": "book-outline",
+  "Doa Rezeki": "cash-outline",
+  "Doa Perlindungan": "umbrella-outline",
+};
+
+function getGroupIcon(grup: string): string {
+  for (const key of Object.keys(GROUP_ICONS)) {
+    if (grup.toLowerCase().includes(key.toLowerCase().split(" ").slice(-2).join(" ").toLowerCase())) {
+      return GROUP_ICONS[key];
+    }
+  }
+  // Try partial keyword matches
+  if (grup.toLowerCase().includes("tidur")) return "moon-outline";
+  if (grup.toLowerCase().includes("makan") || grup.toLowerCase().includes("minum")) return "restaurant-outline";
+  if (grup.toLowerCase().includes("masjid")) return "business-outline";
+  if (grup.toLowerCase().includes("pagi") || grup.toLowerCase().includes("petang")) return "partly-sunny-outline";
+  if (grup.toLowerCase().includes("belajar") || grup.toLowerCase().includes("ilmu")) return "book-outline";
+  if (grup.toLowerCase().includes("ampun") || grup.toLowerCase().includes("tobat")) return "hand-left-outline";
+  if (grup.toLowerCase().includes("rezeki")) return "cash-outline";
+  if (grup.toLowerCase().includes("perjalanan") || grup.toLowerCase().includes("bepergian")) return "car-outline";
+  if (grup.toLowerCase().includes("kamar") || grup.toLowerCase().includes("mandi")) return "water-outline";
+  if (grup.toLowerCase().includes("perlindungan")) return "umbrella-outline";
+  if (grup.toLowerCase().includes("kesehatan") || grup.toLowerCase().includes("sakit")) return "heart-outline";
+  return "hands-outline";
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function DoaScreen() {
   const router = useRouter();
+
+  const [groups, setGroups] = useState<DoaGroup[]>([]);
+  const [allDoas, setAllDoas] = useState<DoaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<DoaItem[]>([]);
-  
-  // Selected prayer for detail modal
-  const [selectedPrayer, setSelectedPrayer] = useState<DoaItem | null>(null);
 
-  const handleSearch = (text: string) => {
-    setSearchQuery(text);
-    if (!text.trim()) {
-      setSearchResults([]);
-      return;
+  // Detail modal
+  const [selectedDoa, setSelectedDoa] = useState<DoaItem | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  // ── Fetch all doas on mount ───────────────────────────────────────────────
+  const fetchAllDoas = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(BASE_URL);
+      const json = await res.json();
+      if (json.status !== "success") throw new Error("Gagal memuat doa");
+
+      const data: DoaItem[] = json.data;
+      setAllDoas(data);
+
+      // Group by 'grup'
+      const groupMap: Record<string, DoaItem[]> = {};
+      for (const doa of data) {
+        if (!groupMap[doa.grup]) groupMap[doa.grup] = [];
+        groupMap[doa.grup].push(doa);
+      }
+
+      setGroups(
+        Object.entries(groupMap).map(([grup, items]) => ({
+          grup,
+          icon: getGroupIcon(grup),
+          items,
+        }))
+      );
+    } catch (err: any) {
+      setError(err.message || "Gagal memuat doa");
+    } finally {
+      setLoading(false);
     }
-    
-    // Search across all items in all categories
-    const results: DoaItem[] = [];
-    DOA_CATEGORIES.forEach((category) => {
-      category.items.forEach((item) => {
-        if (
-          item.title.toLowerCase().includes(text.toLowerCase()) ||
-          item.translation.toLowerCase().includes(text.toLowerCase()) ||
-          item.latin.toLowerCase().includes(text.toLowerCase())
-        ) {
-          results.push(item);
+  }, []);
+
+  useEffect(() => {
+    fetchAllDoas();
+  }, []);
+
+  // ── Fetch detail ─────────────────────────────────────────────────────────
+  const openDetail = useCallback(async (doa: DoaItem) => {
+    setSelectedDoa(doa);
+    // If tentang is not yet loaded, fetch the full detail
+    if (!doa.tentang) {
+      setDetailLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/${doa.id}`);
+        const json = await res.json();
+        if (json.status === "success" && json.data) {
+          setSelectedDoa(json.data);
         }
-      });
-    });
-    setSearchResults(results);
-  };
+      } catch (_) {
+      } finally {
+        setDetailLoading(false);
+      }
+    }
+  }, []);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  const searchResults = searchQuery.trim()
+    ? allDoas.filter(
+        (d) =>
+          d.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          d.idn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          d.tr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          d.grup.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
   const clearSearch = () => {
     setSearchQuery("");
-    setSearchResults([]);
     setShowSearch(false);
   };
 
-  // Find the category of a searched prayer
-  const getCategoryOfPrayer = (prayerId: string) => {
-    for (const cat of DOA_CATEGORIES) {
-      if (cat.items.some((item) => item.id === prayerId)) {
-        return cat.title;
-      }
-    }
-    return "";
-  };
+  // ─── Render ───────────────────────────────────────────────────────────────
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+        <Header
+          title="Doa - doa"
+          onBackPress={() => router.back()}
+          containerStyle={styles.header}
+          titleStyle={styles.headerTitle}
+        />
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#1B6A9C" />
+          <Text style={styles.loadingText}>Memuat doa…</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+        <Header
+          title="Doa - doa"
+          onBackPress={() => router.back()}
+          containerStyle={styles.header}
+          titleStyle={styles.headerTitle}
+        />
+        <View style={styles.centered}>
+          <Ionicons name="alert-circle-outline" size={60} color="#FF3B30" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchAllDoas}>
+            <Text style={styles.retryText}>Coba Lagi</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      
+
       {/* Header */}
       <Header
         title="Doa - doa"
@@ -94,7 +234,7 @@ export default function DoaScreen() {
                 placeholder="Cari doa..."
                 placeholderTextColor="#8E8E93"
                 value={searchQuery}
-                onChangeText={handleSearch}
+                onChangeText={setSearchQuery}
                 autoFocus
                 clearButtonMode="while-editing"
               />
@@ -106,26 +246,22 @@ export default function DoaScreen() {
         }
       />
 
-      {/* Main Content */}
+      {/* Search Results */}
       {showSearch && searchQuery.trim() !== "" ? (
-        // Search Results Screen
         <FlatList
           data={searchResults}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.searchList}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity 
-              onPress={() => setSelectedPrayer(item)}
-            >
+            <TouchableOpacity onPress={() => openDetail(item)}>
               <Card style={styles.searchResultCard}>
                 <View style={styles.searchResultHeader}>
-                  <Text style={styles.searchResultTitle}>{item.title}</Text>
-                  <Text style={styles.searchResultCategory}>
-                    {getCategoryOfPrayer(item.id)}
-                  </Text>
+                  <Text style={styles.searchResultTitle}>{item.nama}</Text>
+                  <Text style={styles.searchResultCategory}>{item.grup}</Text>
                 </View>
                 <Text style={styles.searchResultSnippet} numberOfLines={2}>
-                  {item.translation}
+                  {item.idn}
                 </Text>
               </Card>
             </TouchableOpacity>
@@ -138,83 +274,84 @@ export default function DoaScreen() {
           }
         />
       ) : (
-        // Category Grid Screen
+        // Category Grid
         <ScrollView contentContainerStyle={styles.gridContainer} showsVerticalScrollIndicator={false}>
-          {DOA_CATEGORIES.map((category) => (
+          {groups.map((group, idx) => (
             <TouchableOpacity
-              key={category.id}
-              onPress={() => router.push(`/doa/${category.id}` as any)}
+              key={idx}
+              onPress={() =>
+                router.push({
+                  pathname: "/doa/[category]" as any,
+                  params: { category: group.grup },
+                })
+              }
               activeOpacity={0.7}
             >
               <Card style={styles.gridCard}>
                 <View style={styles.iconOutlineCircle}>
-                  <Ionicons name={category.icon as any} size={24} color="#1B6A9C" />
+                  <Ionicons name={group.icon as any} size={24} color="#1B6A9C" />
                 </View>
-                <Text style={styles.cardLabel}>{category.title}</Text>
+                <Text style={styles.cardLabel} numberOfLines={2}>
+                  {group.grup}
+                </Text>
+                <Text style={styles.cardCount}>{group.items.length} doa</Text>
               </Card>
             </TouchableOpacity>
           ))}
         </ScrollView>
       )}
 
-      {/* Prayer Detail Modal (used for search results) */}
+      {/* Detail Modal */}
       <Modal
-        visible={selectedPrayer !== null}
+        visible={selectedDoa !== null}
         animationType="slide"
-        transparent={true}
-        onRequestClose={() => setSelectedPrayer(null)}
+        transparent
+        onRequestClose={() => setSelectedDoa(null)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            {/* Modal Header */}
             <View style={styles.modalHeader}>
-              <Text style={styles.modalCategoryTitle}>
-                {selectedPrayer ? getCategoryOfPrayer(selectedPrayer.id) : ""}
+              <Text style={styles.modalCategoryTitle} numberOfLines={1}>
+                {selectedDoa?.grup}
               </Text>
-              <TouchableOpacity
-                onPress={() => setSelectedPrayer(null)}
-                style={styles.modalCloseButton}
-              >
+              <TouchableOpacity onPress={() => setSelectedDoa(null)} style={styles.modalCloseButton}>
                 <Ionicons name="close" size={24} color="#3A3A3C" />
               </TouchableOpacity>
             </View>
 
-            {selectedPrayer && (
-              <ScrollView 
+            {selectedDoa && (
+              <ScrollView
                 contentContainerStyle={styles.modalScrollContent}
                 showsVerticalScrollIndicator={false}
               >
-                <Text style={styles.modalTitle}>{selectedPrayer.title}</Text>
-                
-                {/* Arabic Script */}
+                <Text style={styles.modalTitle}>{selectedDoa.nama}</Text>
+
+                {/* Arabic */}
                 <View style={styles.arabicBox}>
-                  <Text style={styles.modalArabicText}>{selectedPrayer.arabic}</Text>
+                  <Text style={styles.modalArabicText}>{selectedDoa.ar}</Text>
                 </View>
 
-                {/* Latin Transliteration */}
+                {/* Latin */}
                 <Text style={styles.modalSectionLabel}>Latin</Text>
-                <Text style={styles.modalLatinText}>{selectedPrayer.latin}</Text>
+                <Text style={styles.modalLatinText}>{selectedDoa.tr}</Text>
 
-                {/* Indonesian Translation */}
+                {/* Translation */}
                 <Text style={styles.modalSectionLabel}>Terjemahan</Text>
-                <Text style={styles.modalTranslationText}>{selectedPrayer.translation}</Text>
+                <Text style={styles.modalTranslationText}>{selectedDoa.idn}</Text>
 
-                {/* Fadhilah / Benefits (if available) */}
-                {selectedPrayer.fadhilah && (
+                {/* Keterangan / tentang */}
+                {detailLoading ? (
+                  <ActivityIndicator size="small" color="#1B6A9C" style={{ marginTop: 20 }} />
+                ) : selectedDoa.tentang ? (
                   <View style={styles.fadhilahBox}>
                     <View style={styles.fadhilahHeader}>
                       <Ionicons name="information-circle" size={18} color="#1B6A9C" />
-                      <Text style={styles.fadhilahTitle}>Fadhilah / Keutamaan</Text>
+                      <Text style={styles.fadhilahTitle}>Keterangan</Text>
                     </View>
-                    <Text style={styles.fadhilahText}>{selectedPrayer.fadhilah}</Text>
+                    <Text style={styles.fadhilahText}>{selectedDoa.tentang}</Text>
                   </View>
-                )}
+                ) : null}
 
-                {/* Source/Reference */}
-                {selectedPrayer.source && (
-                  <Text style={styles.modalSourceText}>Sumber: {selectedPrayer.source}</Text>
-                )}
-                
                 <View style={{ height: 20 }} />
               </ScrollView>
             )}
@@ -224,6 +361,8 @@ export default function DoaScreen() {
     </SafeAreaView>
   );
 }
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
@@ -274,11 +413,41 @@ const styles = StyleSheet.create({
     color: "#007AFF",
     fontWeight: "500",
   },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#8E8E93",
+  },
+  errorText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#FF3B30",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: "#1B6A9C",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  retryText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "bold",
+  },
   gridContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     padding: 12,
     justifyContent: "space-between",
+    paddingBottom: 100,
   },
   gridCard: {
     width: (SCREEN_WIDTH - 36) / 2,
@@ -302,16 +471,24 @@ const styles = StyleSheet.create({
     borderColor: "#D2E1EF",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#F0F7FC",
   },
   cardLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "600",
     color: "#1C1C1E",
-    marginTop: 16,
+    marginTop: 12,
+    lineHeight: 18,
+  },
+  cardCount: {
+    fontSize: 11,
+    color: "#1B6A9C",
+    fontWeight: "500",
+    marginTop: 4,
   },
   searchList: {
     padding: 16,
+    paddingBottom: 100,
   },
   searchResultCard: {
     backgroundColor: "#FFFFFF",
@@ -326,13 +503,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: 8,
+    gap: 8,
   },
   searchResultTitle: {
     fontSize: 15,
     fontWeight: "bold",
     color: "#1C1C1E",
     flex: 1,
-    marginRight: 8,
   },
   searchResultCategory: {
     fontSize: 11,
@@ -343,6 +520,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 8,
     overflow: "hidden",
+    flexShrink: 1,
   },
   searchResultSnippet: {
     fontSize: 13,
@@ -382,11 +560,13 @@ const styles = StyleSheet.create({
     borderBottomColor: "#EBF0F6",
   },
   modalCategoryTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "bold",
     color: "#8E8E93",
     textTransform: "uppercase",
-    letterSpacing: 1,
+    letterSpacing: 0.8,
+    flex: 1,
+    marginRight: 8,
   },
   modalCloseButton: {
     padding: 4,
@@ -410,14 +590,14 @@ const styles = StyleSheet.create({
     borderColor: "#F0F2F5",
   },
   modalArabicText: {
-    fontSize: 24,
+    fontSize: 26,
     color: "#1C1C1E",
     textAlign: "right",
-    lineHeight: 44,
+    lineHeight: 48,
     writingDirection: "rtl",
   },
   modalSectionLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "bold",
     color: "#1B6A9C",
     marginTop: 18,
@@ -458,12 +638,6 @@ const styles = StyleSheet.create({
   fadhilahText: {
     fontSize: 13,
     color: "#3A3A3C",
-    lineHeight: 18,
-  },
-  modalSourceText: {
-    fontSize: 12,
-    color: "#8E8E93",
-    fontStyle: "italic",
-    marginTop: 16,
+    lineHeight: 20,
   },
 });

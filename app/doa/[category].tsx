@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,211 +9,211 @@ import {
   StatusBar,
   Platform,
   TextInput,
+  ActivityIndicator,
+  Modal,
   ScrollView,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { DOA_CATEGORIES, DoaItem } from "../../constants/doa-data";
 import { Header } from "@/components/ui/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { DoaItem } from "./index";
+
+const BASE_URL = "https://equran.id/api/doa";
 
 export default function CategoryDetailScreen() {
-  const { category: categoryId } = useLocalSearchParams();
+  const { category } = useLocalSearchParams<{ category: string }>();
   const router = useRouter();
 
-  // Search inside the category
+  const [allDoas, setAllDoas] = useState<DoaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Tasbih counts state: { [prayerId]: count }
-  const [counts, setCounts] = useState<Record<string, number>>({});
+  // Counter state (tasbih) keyed by doa id
+  const [counts, setCounts] = useState<Record<number, number>>({});
 
-  // Find the current category
-  const currentCategory = DOA_CATEGORIES.find((cat) => cat.id === categoryId);
+  // Full detail modal
+  const [selectedDoa, setSelectedDoa] = useState<DoaItem | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
-  if (!currentCategory) {
+  // ── Fetch all doas then filter by group ──────────────────────────────────
+  const fetchDoas = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(BASE_URL);
+      const json = await res.json();
+      if (json.status !== "success") throw new Error("Gagal memuat doa");
+      const filtered: DoaItem[] = (json.data as DoaItem[]).filter(
+        (d) => d.grup === category
+      );
+      setAllDoas(filtered);
+    } catch (err: any) {
+      setError(err.message || "Gagal memuat doa");
+    } finally {
+      setLoading(false);
+    }
+  }, [category]);
+
+  useEffect(() => {
+    fetchDoas();
+  }, [fetchDoas]);
+
+  // ── Open full detail (fetches tentang) ───────────────────────────────────
+  const openDetail = useCallback(async (doa: DoaItem) => {
+    setSelectedDoa(doa);
+    if (!doa.tentang) {
+      setDetailLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/${doa.id}`);
+        const json = await res.json();
+        if (json.status === "success" && json.data) {
+          setSelectedDoa(json.data);
+        }
+      } catch (_) {
+      } finally {
+        setDetailLoading(false);
+      }
+    }
+  }, []);
+
+  // ── Tasbih counter ────────────────────────────────────────────────────────
+  const handleCounterTap = async (id: number) => {
+    const current = counts[id] || 0;
+    const next = current + 1;
+    setCounts((prev) => ({ ...prev, [id]: next }));
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch (_) {}
+  };
+
+  const handleReset = async (id: number) => {
+    setCounts((prev) => ({ ...prev, [id]: 0 }));
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    } catch (_) {}
+  };
+
+  // ── Filter list ───────────────────────────────────────────────────────────
+  const filteredDoas = searchQuery.trim()
+    ? allDoas.filter(
+        (d) =>
+          d.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          d.idn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          d.tr.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : allDoas;
+
+  // ── Render item ───────────────────────────────────────────────────────────
+  const renderItem = ({ item, index }: { item: DoaItem; index: number }) => {
+    const count = counts[item.id] || 0;
+
     return (
-      <SafeAreaView style={styles.centeredContainer}>
-        <StatusBar barStyle="dark-content" />
-        <Ionicons name="alert-circle-outline" size={60} color="#FF3B30" />
-        <Text style={styles.errorText}>Kategori tidak ditemukan</Text>
-        <TouchableOpacity style={styles.backLink} onPress={() => router.back()}>
-          <Text style={styles.backLinkText}>Kembali</Text>
+      <Card style={styles.prayerCard}>
+        {/* Header */}
+        <TouchableOpacity
+          style={styles.cardHeader}
+          onPress={() => openDetail(item)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.numberBadge}>
+            <Text style={styles.numberText}>{index + 1}</Text>
+          </View>
+          <Text style={styles.prayerTitle}>{item.nama}</Text>
+          <Ionicons name="chevron-forward" size={16} color="#C7C7CC" />
         </TouchableOpacity>
+
+        {/* Arabic */}
+        <View style={styles.arabicContainer}>
+          <Text style={styles.arabicText}>{item.ar}</Text>
+        </View>
+
+        {/* Latin */}
+        <Text style={styles.sectionLabel}>Latin</Text>
+        <Text style={styles.latinText}>{item.tr}</Text>
+
+        {/* Translation */}
+        <Text style={styles.sectionLabel}>Terjemahan</Text>
+        <Text style={styles.translationText}>{item.idn}</Text>
+
+        {/* Tasbih counter */}
+        <View style={styles.counterWrapper}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.counterButton}
+            onPress={() => handleCounterTap(item.id)}
+          >
+            <Ionicons name="finger-print-outline" size={18} color="#1B6A9C" style={{ marginRight: 8 }} />
+            <Text style={styles.counterText}>{count}×</Text>
+            <Text style={styles.counterHint}>  Ketuk untuk hitung</Text>
+          </TouchableOpacity>
+
+          {count > 0 && (
+            <Button
+              label="Reset"
+              variant="outline"
+              onPress={() => handleReset(item.id)}
+              icon={<Ionicons name="refresh" size={16} color="#8E8E93" />}
+              style={styles.resetButton}
+              textStyle={styles.resetText}
+            />
+          )}
+        </View>
+      </Card>
+    );
+  };
+
+  // ── Loading / Error ───────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+        <Header
+          title={category || "Kategori Doa"}
+          onBackPress={() => router.back()}
+          containerStyle={styles.header}
+          titleStyle={styles.headerTitle}
+        />
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#1B6A9C" />
+          <Text style={styles.loadingText}>Memuat doa…</Text>
+        </View>
       </SafeAreaView>
     );
   }
 
-  // Filter items based on search query
-  const filteredItems = currentCategory.items.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.translation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.latin.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Handle counter tap
-  const handleCounterTap = async (itemId: string, maxCount: number) => {
-    const currentVal = counts[itemId] || 0;
-    
-    try {
-      if (currentVal >= maxCount) {
-        // Reset to 0
-        setCounts((prev) => ({ ...prev, [itemId]: 0 }));
-        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      } else {
-        const newVal = currentVal + 1;
-        setCounts((prev) => ({ ...prev, [itemId]: newVal }));
-        
-        if (newVal === maxCount) {
-          // Success haptic when complete
-          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } else {
-          // Light tick haptic for counting
-          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
-      }
-    } catch (e) {
-      // Haptics might fail on simulator/web, ignore silently
-      if (currentVal >= maxCount) {
-        setCounts((prev) => ({ ...prev, [itemId]: 0 }));
-      } else {
-        setCounts((prev) => ({ ...prev, [itemId]: currentVal + 1 }));
-      }
-    }
-  };
-
-  // Reset counter manually
-  const handleReset = async (itemId: string) => {
-    setCounts((prev) => ({ ...prev, [itemId]: 0 }));
-    try {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    } catch (e) {}
-  };
-
-  const renderPrayerItem = ({ item, index }: { item: DoaItem; index: number }) => {
-    const currentCount = counts[item.id] || 0;
-    const isCompleted = currentCount >= item.count;
-    const isMultiCount = item.count > 1;
-
+  if (error) {
     return (
-      <Card style={styles.prayerCard}>
-        {/* Card Header */}
-        <View style={styles.cardHeader}>
-          <View style={styles.numberBadge}>
-            <Text style={styles.numberText}>{index + 1}</Text>
-          </View>
-          <Text style={styles.prayerTitle}>{item.title}</Text>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
+        <Header
+          title={category || "Kategori Doa"}
+          onBackPress={() => router.back()}
+          containerStyle={styles.header}
+          titleStyle={styles.headerTitle}
+        />
+        <View style={styles.centered}>
+          <Ionicons name="alert-circle-outline" size={60} color="#FF3B30" />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchDoas}>
+            <Text style={styles.retryText}>Coba Lagi</Text>
+          </TouchableOpacity>
         </View>
-
-        {/* Arabic Script */}
-        <View style={styles.arabicContainer}>
-          <Text style={styles.arabicText}>{item.arabic}</Text>
-        </View>
-
-        {/* Latin Transliteration */}
-        <Text style={styles.sectionLabel}>Latin</Text>
-        <Text style={styles.latinText}>{item.latin}</Text>
-
-        {/* Translation */}
-        <Text style={styles.sectionLabel}>Terjemahan</Text>
-        <Text style={styles.translationText}>{item.translation}</Text>
-
-        {/* Fadhilah / Benefits */}
-        {item.fadhilah && (
-          <View style={styles.fadhilahContainer}>
-            <View style={styles.fadhilahHeader}>
-              <Ionicons name="information-circle-outline" size={16} color="#1B6A9C" />
-              <Text style={styles.fadhilahTitle}>Fadhilah</Text>
-            </View>
-            <Text style={styles.fadhilahText}>{item.fadhilah}</Text>
-          </View>
-        )}
-
-        {/* Source/Reference */}
-        {item.source && (
-          <Text style={styles.sourceText}>Sumber: {item.source}</Text>
-        )}
-
-        {/* Tasbih/Dhikr Counter (Only for counts > 1) */}
-        {isMultiCount ? (
-          <View style={styles.counterWrapper}>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              style={[
-                styles.counterButton,
-                isCompleted ? styles.counterButtonCompleted : styles.counterButtonCounting,
-              ]}
-              onPress={() => handleCounterTap(item.id, item.count)}
-            >
-              <View style={styles.counterContent}>
-                <Ionicons 
-                  name={isCompleted ? "checkmark-circle" : "finger-print-outline"} 
-                  size={20} 
-                  color={isCompleted ? "#2E7D32" : "#1B6A9C"} 
-                  style={styles.counterIcon}
-                />
-                <Text style={[
-                  styles.counterCountText,
-                  isCompleted ? styles.counterCountTextCompleted : styles.counterCountTextCounting
-                ]}>
-                  {currentCount} / {item.count}
-                </Text>
-                <Text style={styles.counterTapHint}>
-                  {isCompleted ? "(Selesai - Ketuk untuk Ulang)" : "(Ketuk untuk Hitung)"}
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            {currentCount > 0 && (
-              <Button
-                label="Reset"
-                variant="outline"
-                onPress={() => handleReset(item.id)}
-                icon={<Ionicons name="refresh" size={20} color="#8E8E93" />}
-                style={styles.resetButton}
-                textStyle={styles.resetText}
-              />
-            )}
-          </View>
-        ) : (
-          // For count == 1, show a simple "Mark Read" checkmark toggle to help the user keep track
-          <View style={styles.singleCheckWrapper}>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={[
-                styles.checkToggleButton,
-                currentCount === 1 ? styles.checkToggleChecked : styles.checkToggleUnchecked
-              ]}
-              onPress={() => setCounts(prev => ({ ...prev, [item.id]: currentCount === 1 ? 0 : 1 }))}
-            >
-              <Ionicons 
-                name={currentCount === 1 ? "checkmark-circle" : "ellipse-outline"} 
-                size={22} 
-                color={currentCount === 1 ? "#2E7D32" : "#8E8E93"} 
-              />
-              <Text style={[
-                styles.checkToggleText,
-                currentCount === 1 ? styles.checkToggleTextChecked : styles.checkToggleTextUnchecked
-              ]}>
-                {currentCount === 1 ? "Sudah Dibaca" : "Tandai Dibaca"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </Card>
+      </SafeAreaView>
     );
-  };
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      {/* Header */}
       <Header
-        title={currentCategory.title}
+        title={category || "Kategori Doa"}
         onBackPress={() => router.back()}
         rightComponent={
           <TouchableOpacity onPress={() => setShowSearch(true)} style={styles.headerButton}>
@@ -225,21 +225,18 @@ export default function CategoryDetailScreen() {
         customContent={
           showSearch ? (
             <View style={styles.searchBarContainer}>
-              <Ionicons name="search-outline" size={20} color="#8E8E93" style={styles.searchIcon} />
+              <Ionicons name="search-outline" size={20} color="#8E8E93" style={styles.searchIconStyle} />
               <TextInput
                 style={styles.searchInput}
-                placeholder={`Cari di ${currentCategory.title}...`}
+                placeholder="Cari doa..."
                 placeholderTextColor="#8E8E93"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 autoFocus
                 clearButtonMode="while-editing"
               />
-              <TouchableOpacity 
-                onPress={() => {
-                  setSearchQuery("");
-                  setShowSearch(false);
-                }} 
+              <TouchableOpacity
+                onPress={() => { setSearchQuery(""); setShowSearch(false); }}
                 style={styles.closeSearchButton}
               >
                 <Text style={styles.closeSearchText}>Batal</Text>
@@ -249,11 +246,10 @@ export default function CategoryDetailScreen() {
         }
       />
 
-      {/* List of Prayers */}
       <FlatList
-        data={filteredItems}
-        keyExtractor={(item) => item.id}
-        renderItem={renderPrayerItem}
+        data={filteredDoas}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
@@ -263,9 +259,65 @@ export default function CategoryDetailScreen() {
           </View>
         }
       />
+
+      {/* Full Detail Modal */}
+      <Modal
+        visible={selectedDoa !== null}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setSelectedDoa(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalCategoryLabel} numberOfLines={1}>
+                {selectedDoa?.grup}
+              </Text>
+              <TouchableOpacity onPress={() => setSelectedDoa(null)} style={styles.modalCloseBtn}>
+                <Ionicons name="close" size={24} color="#3A3A3C" />
+              </TouchableOpacity>
+            </View>
+
+            {selectedDoa && (
+              <ScrollView
+                contentContainerStyle={styles.modalScroll}
+                showsVerticalScrollIndicator={false}
+              >
+                <Text style={styles.modalTitle}>{selectedDoa.nama}</Text>
+
+                <View style={styles.arabicBox}>
+                  <Text style={styles.modalArabic}>{selectedDoa.ar}</Text>
+                </View>
+
+                <Text style={styles.modalLabel}>Latin</Text>
+                <Text style={styles.modalLatin}>{selectedDoa.tr}</Text>
+
+                <Text style={styles.modalLabel}>Terjemahan</Text>
+                <Text style={styles.modalTranslation}>{selectedDoa.idn}</Text>
+
+                {detailLoading ? (
+                  <ActivityIndicator size="small" color="#1B6A9C" style={{ marginTop: 20 }} />
+                ) : selectedDoa.tentang ? (
+                  <View style={styles.tentangBox}>
+                    <View style={styles.tentangHeader}>
+                      <Ionicons name="information-circle" size={18} color="#1B6A9C" />
+                      <Text style={styles.tentangTitle}>Keterangan</Text>
+                    </View>
+                    <Text style={styles.tentangText}>{selectedDoa.tentang}</Text>
+                  </View>
+                ) : null}
+
+                <View style={{ height: 20 }} />
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
@@ -284,42 +336,19 @@ const styles = StyleSheet.create({
     borderBottomColor: "#EBF0F6",
     height: 56,
   },
-  headerButton: {
-    padding: 4,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1C1C1E",
-  },
-  searchBarContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: "#1C1C1E",
-    paddingVertical: 4,
-  },
-  closeSearchButton: {
-    paddingLeft: 12,
-  },
-  closeSearchText: {
-    fontSize: 15,
-    color: "#007AFF",
-    fontWeight: "500",
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
+  headerButton: { padding: 4, justifyContent: "center", alignItems: "center" },
+  headerTitle: { fontSize: 18, fontWeight: "bold", color: "#1C1C1E" },
+  searchBarContainer: { flexDirection: "row", alignItems: "center", flex: 1 },
+  searchIconStyle: { marginRight: 8 },
+  searchInput: { flex: 1, fontSize: 16, color: "#1C1C1E", paddingVertical: 4 },
+  closeSearchButton: { paddingLeft: 12 },
+  closeSearchText: { fontSize: 15, color: "#007AFF", fontWeight: "500" },
+  centered: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
+  loadingText: { marginTop: 12, fontSize: 16, color: "#8E8E93" },
+  errorText: { marginTop: 12, fontSize: 16, color: "#FF3B30", textAlign: "center", marginBottom: 20 },
+  retryButton: { backgroundColor: "#1B6A9C", paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
+  retryText: { color: "#FFFFFF", fontSize: 15, fontWeight: "bold" },
+  listContent: { padding: 16, paddingBottom: 100 },
   prayerCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
@@ -333,11 +362,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
+  cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
   numberBadge: {
     width: 28,
     height: 28,
@@ -346,18 +371,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+    flexShrink: 0,
   },
-  numberText: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: "#1B6A9C",
-  },
-  prayerTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1C1C1E",
-    flex: 1,
-  },
+  numberText: { fontSize: 13, fontWeight: "bold", color: "#1B6A9C" },
+  prayerTitle: { fontSize: 15, fontWeight: "bold", color: "#1C1C1E", flex: 1 },
   arabicContainer: {
     backgroundColor: "#F8F9FB",
     borderRadius: 12,
@@ -366,197 +383,80 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#F0F2F5",
   },
-  arabicText: {
-    fontSize: 24,
-    color: "#1C1C1E",
-    textAlign: "right",
-    lineHeight: 44,
-    writingDirection: "rtl",
-  },
+  arabicText: { fontSize: 22, color: "#1C1C1E", textAlign: "right", lineHeight: 40, writingDirection: "rtl" },
   sectionLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "bold",
     color: "#1B6A9C",
     textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 4,
-    marginTop: 10,
+    marginTop: 8,
   },
-  latinText: {
-    fontSize: 14.5,
-    fontStyle: "italic",
-    color: "#48484A",
-    lineHeight: 22,
-    marginBottom: 10,
-  },
-  translationText: {
-    fontSize: 14.5,
-    color: "#1C1C1E",
-    lineHeight: 22,
-    marginBottom: 10,
-  },
-  fadhilahContainer: {
-    backgroundColor: "#F4F9FC",
-    borderRadius: 12,
-    padding: 14,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: "#D2E7F4",
-  },
-  fadhilahHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 6,
-  },
-  fadhilahTitle: {
-    fontSize: 12.5,
-    fontWeight: "bold",
-    color: "#1B6A9C",
-    marginLeft: 6,
-  },
-  fadhilahText: {
-    fontSize: 13,
-    color: "#3A3A3C",
-    lineHeight: 18,
-  },
-  sourceText: {
-    fontSize: 12,
-    color: "#8E8E93",
-    fontStyle: "italic",
-    marginTop: 12,
-    marginBottom: 4,
-  },
+  latinText: { fontSize: 14, fontStyle: "italic", color: "#48484A", lineHeight: 22, marginBottom: 8 },
+  translationText: { fontSize: 14, color: "#1C1C1E", lineHeight: 22 },
   counterWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 18,
-    paddingTop: 16,
+    marginTop: 16,
+    paddingTop: 14,
     borderTopWidth: 1,
     borderTopColor: "#F2F4F7",
   },
   counterButton: {
     flex: 1,
-    height: 52,
-    borderRadius: 12,
-    justifyContent: "center",
+    flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#F0F7FC",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderWidth: 1,
+    borderColor: "#C5DDEF",
   },
-  counterButtonCounting: {
-    backgroundColor: "#F4F9FC",
-    borderColor: "#B9D8EE",
+  counterText: { fontSize: 18, fontWeight: "bold", color: "#1B6A9C" },
+  counterHint: { fontSize: 12, color: "#8E8E93" },
+  resetButton: { marginLeft: 10, paddingHorizontal: 12, height: 42, borderRadius: 10 },
+  resetText: { fontSize: 13, color: "#8E8E93", fontWeight: "600" },
+  emptyContainer: { alignItems: "center", justifyContent: "center", paddingVertical: 80 },
+  emptyText: { marginTop: 12, fontSize: 16, color: "#8E8E93", textAlign: "center" },
+
+  // Modal
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: "85%",
+    paddingBottom: Platform.OS === "ios" ? 30 : 16,
   },
-  counterButtonCompleted: {
-    backgroundColor: "#E8F5E9",
-    borderColor: "#A5D6A7",
-  },
-  counterContent: {
+  modalHeader: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "center",
-    flexWrap: "wrap",
-    paddingHorizontal: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EBF0F6",
   },
-  counterIcon: {
-    marginRight: 8,
-  },
-  counterCountText: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  counterCountTextCounting: {
-    color: "#1B6A9C",
-  },
-  counterCountTextCompleted: {
-    color: "#2E7D32",
-  },
-  counterTapHint: {
-    fontSize: 11,
-    color: "#8E8E93",
-    marginLeft: 8,
-  },
-  resetButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 16,
-    height: 52,
-    marginLeft: 12,
-    borderRadius: 12,
-    backgroundColor: "#F2F4F7",
-  },
-  resetText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#8E8E93",
-    marginLeft: 6,
-  },
-  singleCheckWrapper: {
-    marginTop: 14,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: "#F2F4F7",
-  },
-  checkToggleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  checkToggleUnchecked: {
-    backgroundColor: "#F2F4F7",
-  },
-  checkToggleChecked: {
-    backgroundColor: "#E8F5E9",
-  },
-  checkToggleText: {
-    fontSize: 13,
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-  checkToggleTextUnchecked: {
-    color: "#5F6C7D",
-  },
-  checkToggleTextChecked: {
-    color: "#2E7D32",
-  },
-  centeredContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F4F6F9",
+  modalCategoryLabel: { fontSize: 12, fontWeight: "bold", color: "#8E8E93", textTransform: "uppercase", letterSpacing: 0.8, flex: 1, marginRight: 8 },
+  modalCloseBtn: { padding: 4 },
+  modalScroll: { paddingHorizontal: 20, paddingTop: 16 },
+  modalTitle: { fontSize: 20, fontWeight: "bold", color: "#1C1C1E", marginBottom: 16 },
+  arabicBox: {
+    backgroundColor: "#F8F9FB",
+    borderRadius: 16,
     padding: 20,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: "#F0F2F5",
   },
-  errorText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: "#FF3B30",
-    fontWeight: "600",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  backLink: {
-    backgroundColor: "#1B6A9C",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  backLinkText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  emptyContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 80,
-  },
-  emptyText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: "#8E8E93",
-    textAlign: "center",
-  },
+  modalArabic: { fontSize: 26, color: "#1C1C1E", textAlign: "right", lineHeight: 48, writingDirection: "rtl" },
+  modalLabel: { fontSize: 12, fontWeight: "bold", color: "#1B6A9C", marginTop: 18, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 },
+  modalLatin: { fontSize: 14.5, fontStyle: "italic", color: "#48484A", lineHeight: 22 },
+  modalTranslation: { fontSize: 14.5, color: "#1C1C1E", lineHeight: 22 },
+  tentangBox: { backgroundColor: "#F4F9FC", borderRadius: 12, padding: 14, marginTop: 20, borderWidth: 1, borderColor: "#D2E7F4" },
+  tentangHeader: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
+  tentangTitle: { fontSize: 13, fontWeight: "bold", color: "#1B6A9C", marginLeft: 6 },
+  tentangText: { fontSize: 13, color: "#3A3A3C", lineHeight: 20 },
 });
