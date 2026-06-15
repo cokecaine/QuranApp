@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect, useState, useCallback } from "react";
 import {
   StyleSheet,
@@ -5,13 +6,12 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Dimensions,
   Platform,
   Modal,
   ActivityIndicator,
-  FlatList,
+  FlatList
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";

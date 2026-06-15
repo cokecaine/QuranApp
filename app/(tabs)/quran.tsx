@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -5,15 +6,16 @@ import {
   View,
   FlatList,
   ActivityIndicator,
-  SafeAreaView,
   StatusBar,
   Platform,
+  TouchableOpacity
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Header } from "@/components/ui/header";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAudio } from "@/hooks/use-audio";
 
 interface Surah {
   nomor: number;
@@ -23,6 +25,7 @@ interface Surah {
   tempatTurun: string;
   arti: string;
   deskripsi: string;
+  audioFull: Record<string, string>;
 }
 
 export default function QuranScreen() {
@@ -32,6 +35,8 @@ export default function QuranScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const { playSound, isPlaying, currentUrl, loading: audioLoading } = useAudio();
 
   const fetchSurahs = async () => {
     setLoading(true);
@@ -76,11 +81,10 @@ export default function QuranScreen() {
 
   const renderSurahItem = ({ item }: { item: Surah }) => {
     return (
-      <Button
-        label=""
-        variant="text"
+      <TouchableOpacity
         style={styles.surahCard}
         onPress={() => router.push(`/surah/${item.nomor}`)}
+        activeOpacity={0.8}
       >
         <View style={styles.leftContainer}>
           <View style={styles.numberBadge}>
@@ -95,9 +99,28 @@ export default function QuranScreen() {
         </View>
         <View style={styles.rightContainer}>
           <Text style={styles.arabicName}>{item.nama}</Text>
-          <Text style={styles.translationText}>{item.arti}</Text>
+          <View style={styles.rightActions}>
+            <Text style={styles.translationText}>{item.arti}</Text>
+            {item.audioFull && item.audioFull["05"] && (
+              <TouchableOpacity
+                style={styles.playButton}
+                onPress={() => playSound(item.audioFull["05"])}
+                activeOpacity={0.7}
+              >
+                {audioLoading && currentUrl === item.audioFull["05"] ? (
+                  <ActivityIndicator size="small" color="#2F58E8" />
+                ) : (
+                  <Ionicons
+                    name={isPlaying && currentUrl === item.audioFull["05"] ? "pause-circle" : "play-circle"}
+                    size={28}
+                    color="#2F58E8"
+                  />
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-      </Button>
+      </TouchableOpacity>
     );
   };
 
@@ -272,10 +295,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#2F58E8",
     marginBottom: 4,
+    textAlign: "right",
+  },
+  rightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
   },
   translationText: {
     fontSize: 12,
     color: "#8E8E93",
+    marginRight: 8,
+  },
+  playButton: {
+    padding: 2,
   },
   centered: {
     flex: 1,
