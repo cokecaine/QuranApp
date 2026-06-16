@@ -36,11 +36,11 @@ export default function ProfileScreen() {
   const user = clerkUser.user;
 
   const userName = isSignedIn
-    ? (user?.fullName || user?.username || "Onic Agustino")
+    ? (user?.fullName || user?.username || "Guest")
     : "Tamu MASA";
 
   const userEmail = isSignedIn
-    ? (user?.primaryEmailAddress?.emailAddress || "onicagustino304@gmail.com")
+    ? (user?.primaryEmailAddress?.emailAddress || "guest@example.com")
     : "Ketuk untuk masuk ke akun M-ID";
 
   const handleSignOut = async () => {
