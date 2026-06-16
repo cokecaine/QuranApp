@@ -48,19 +48,19 @@ dahulu.
 Berikut adalah tampilan antarmuka dari beberapa halaman utama aplikasi MASA App Clone:
 
 
-|                 Bookmark                 |                 Kalender                 |                          Konverter Kalender                          |                Profil                 |
+| Bookmark | Kalender | Konverter Kalender | Profil |
 | :--------------------------------------: | :--------------------------------------: | :------------------------------------------------------------------: | :-----------------------------------: |
-| ![Bookmark](documentation/bookmark.jpeg) | ![Kalender](documentation/calendar.jpeg) | ![Konverter Kalender](<documentation/calendar-converter.jpeg .jpeg>) | ![Profil](documentation/profile.jpeg) |
+| ![Bookmark](docs-quran-new/bookmark.png) | ![Kalender](docs-quran-new/kalender.png) | ![Konverter Kalender](docs-quran-new/kalender-konvert.png) | ![Profil](docs-quran-new/menu%20setting.png) |
 
 
-|                 Al-Qur'an                        |               Detail Al-Qur'an           |                          Kompas Kiblat                               |                interface doa          |
+| Al-Qur'an | Detail Al-Qur'an | Kompas Kiblat | Interface Doa |
 | :----------------------------------------------: | :--------------------------------------: | :------------------------------------------------------------------: | :-----------------------------------: |
-| ![Al-Qur'an](documentation/surah.jpeg) | ![Detail Al-Qur'an](documentation/surah-detail.jpeg) | ![Kiblat](<documentation/kiblat.jpeg>) | ![Doa](documentation/doa.jpeg) |
+| ![Al-Qur'an](docs-quran-new/alquran.png) | ![Detail Al-Qur'an](docs-quran-new/alquran-surah.png) | ![Kiblat](docs-quran-new/kiblar.png) | ![Doa](docs-quran-new/doa.png) |
 
 
-|                 Detail Doa                 |                 Jadwal Shalat                 |
-| :--------------------------------------: | :---------------------------------------------: | 
-| ![Detail Doa](documentation/doa-details.jpeg) | ![Shalat](documentation/prayer.jpeg)       |
+| Detail Doa | Jadwal Shalat | Home | Login |
+| :--------------------------------------: | :---------------------------------------------: | :--------------------------------------: | :-----------------------------------: |
+| ![Detail Doa](docs-quran-new/doa-deep.png) | ![Shalat](docs-quran-new/waktu-sholat.png) | ![Home](docs-quran-new/homepage.png) | ![Login](docs-quran-new/login%20menu.png) |
 
 
 ---

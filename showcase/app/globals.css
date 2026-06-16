@@ -1,0 +1,407 @@
+/* ─── CSS Variables ─────────────────────────────────── */
+:root {
+  --bg: #ffffff;
+  --text: #111111;
+  --text-dim: #666666;
+  --border: #e2e8f0;
+  --accent: #0f172a;
+  --accent-light: #f8fafc;
+  --link: #2563eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --text: #f8fafc;
+    --text-dim: #94a3b8;
+    --border: #1e293b;
+    --accent: #ffffff;
+    --accent-light: #1e293b;
+    --link: #60a5fa;
+  }
+}
+
+/* ─── Reset & Base ──────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ─── Material Symbols Base ─────────────────────────── */
+/* Must be set globally so the variable font axes apply */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded', sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'liga';
+  /* Apply filled style (FILL=1) + normal weight */
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+/* ─── Layout ────────────────────────────────────────── */
+.page-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 60px 24px;
+}
+
+/* ─── Header ────────────────────────────────────────── */
+.site-header {
+  margin-bottom: 48px;
+}
+
+.site-header h1 {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.site-header .subtitle {
+  font-size: 18px;
+  color: var(--text-dim);
+  max-width: 560px;
+  line-height: 1.6;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+/* ─── Buttons ───────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  line-height: 1;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-outline:hover {
+  background: var(--accent-light);
+}
+
+.btn .material-symbols-rounded {
+  font-size: 16px;
+}
+
+/* ─── Sections ──────────────────────────────────────── */
+.section {
+  margin-bottom: 64px;
+}
+
+.section h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+/* ─── Screenshots Gallery ───────────────────────────── */
+.screenshots-gallery {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 12px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.screenshots-gallery::-webkit-scrollbar {
+  display: none;
+}
+
+.screenshots-gallery img {
+  height: 480px;
+  width: auto;
+  flex-shrink: 0;
+  border-radius: 24px;
+  border: 4px solid var(--accent-light);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  object-fit: cover;
+  display: block;
+}
+
+/* ─── Features Grid ─────────────────────────────────── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.feature-icon .material-symbols-rounded {
+  font-size: 20px;
+  color: var(--text);
+}
+
+.feature-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.feature-card p {
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+/* ─── Team Table ────────────────────────────────────── */
+.team-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.team-table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  padding: 0 12px 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.team-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.team-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.team-table .nim {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* ─── Tech Stack ────────────────────────────────────── */
+.tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  list-style: none;
+}
+
+.tech-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px 6px 10px;
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+
+.tech-list li .material-symbols-rounded {
+  font-size: 16px;
+  color: var(--text-dim);
+}
+
+/* ─── API List ──────────────────────────────────────── */
+.api-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.api-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.api-list li .material-symbols-rounded {
+  font-size: 20px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.api-list li a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.api-list li a:hover {
+  text-decoration: underline;
+}
+
+/* ─── Code inline ────────────────────────────────────── */
+.inline-code {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+/* ─── Demo Badge ────────────────────────────────────── */
+.badge-demo {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text-dim);
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-left: 8px;
+  vertical-align: middle;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* ─── Post-Submission Fixes ─────────────────────────── */
+.fixes-intro {
+  font-size: 15px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.fixes-intro a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.fixes-intro a:hover {
+  text-decoration: underline;
+}
+
+.fixes-table td {
+  vertical-align: middle;
+}
+
+.fixes-table td:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.fixes-icon {
+  font-size: 16px !important;
+  color: var(--text-dim);
+}
+
+.fixes-status {
+  font-size: 14px;
+}
+
+.fixes-broken {
+  color: #b45309;
+}
+
+@media (prefers-color-scheme: dark) {
+  .fixes-broken {
+    color: #fbbf24;
+  }
+}
+
+/* ─── Footer ────────────────────────────────────────── */
+.site-footer {
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-dim);
+}
