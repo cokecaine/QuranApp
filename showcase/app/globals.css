@@ -333,7 +333,182 @@ body {
   padding: 1px 6px;
 }
 
+/* ─── Goal List ─────────────────────────────────────── */
+.goal-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.goal-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.goal-list li .material-symbols-rounded {
+  font-size: 18px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ─── Branch List (Architecture) ────────────────────── */
+.branch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.branch-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.branch-row .material-symbols-rounded {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.branch-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.branch-row strong {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.branch-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.branch-main {
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+}
+
+.branch-main .material-symbols-rounded {
+  color: var(--text);
+}
+
+.branch-develop {
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  margin-left: 12px;
+}
+
+.branch-develop .material-symbols-rounded {
+  color: var(--text-dim);
+}
+
+.branch-feature {
+  margin-left: 28px;
+  border-left: 2px solid var(--border);
+  border-radius: 0;
+  padding-left: 14px;
+}
+
+.branch-feature .material-symbols-rounded {
+  color: var(--text-dim);
+}
+
+/* ─── Contributions ─────────────────────────────────── */
+.contrib-block {
+  margin-bottom: 28px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.contrib-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--accent-light);
+  border-bottom: 1px solid var(--border);
+}
+
+.contrib-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.contrib-meta strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.contrib-nim {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.contrib-role-tag {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-dim);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.commit-list {
+  list-style: none;
+  padding: 8px 0;
+}
+
+.commit-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.commit-list li:hover {
+  background: var(--accent-light);
+}
+
+.sha {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
 /* ─── Demo Badge ────────────────────────────────────── */
+
 .badge-demo {
   display: inline-block;
   font-size: 11px;
