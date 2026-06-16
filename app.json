@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "MASA Clone",
+    "name": "MASA - Quran and Prayer",
     "slug": "masa-clone-boluketan",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icon-app.png",
     "scheme": "masaclone",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -21,7 +21,11 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "output": "static",
@@ -32,7 +36,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/icon-app.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -43,7 +47,18 @@
       ],
       "expo-web-browser",
       "expo-audio",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-asset",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "packagingOptions": {
+              "pickFirst": ["META-INF/versions/9/OSGI-INF/MANIFEST.MF"]
+            }
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -52,7 +67,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "ac1f44d5-fdd0-4cf3-9160-57521d38199d"
+        "projectId": "7402b1ab-cbe2-4ac2-93a1-77e07c7fc147"
       }
     }
   }

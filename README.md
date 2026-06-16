@@ -1,230 +1,400 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/PBUMDKdO)
-# Assignment: MASA App Clone with Expo
+# MASA App Clone - Dokumentasi Project (README)
 
-## Overview
 
-In this group assignment, you will recreate the core experience of the MASA mobile application using Expo.
+Aplikasi mobile **MASA App Clone** dirancang menggunakan **Expo** dan **React Native** untuk mereplikasi fitur utama dari aplikasi _MASA_ (Muslim Lifestyle Application) yang dikembangkan oleh Muhammadiyah Software Labs. 
+Aplikasi ini mencakup berbagai utilitas ibadah harian seperti jadwal salat, kompas kiblat, Al-Qur'an digital, kumpulan doa harian, kalender Hijriah beserta konverternya, dan manajemen akun pengguna.
 
-Reference apps:
 
-- Android: https://play.google.com/store/apps/details?id=com.labmu.masa&hl=id
-- iOS: https://apps.apple.com/id/app/masa/id6753329539
+---
 
-You are not required to reproduce every feature in the original app. Your goal is to build a polished functional clone that demonstrates the required mobile development skills listed below.
 
-Use your own assets, icons, copy, and branding where needed. Do not reuse proprietary assets from the original application.
+## 👥 Anggota Kelompok & ID Mahasiswa
 
-## Assignment Type
 
-- Format: Group assignment
-- Group size: 3-4 students per group
-- Framework: Expo
-- Submission platform: GitHub Classroom
-- Deadline: **8 June, 23:59**
+Aplikasi ini dikembangkan oleh kelompok mahasiswa **Universitas Muhammadiyah Surakarta (UMS)**:
 
-## Learning Outcomes
 
-By the end of this assignment, your group must demonstrate the ability to:
+| Nama                         | NIM / Student ID | Peran / Kontribusi                 |
+| :--------------------------- | :--------------- | :--------------------------------- |
+| **Onic Agustino**            | `L200234275`     | Homepage, Prayer Feature, Bookmark |
+| **Mahardika Fatwa Ramadhan** | `L200248067`     | Quran, Surah Details, and Documentation            |
+| **Guruh Widisaputra**        | `L200244058`     | EAS Build + Project Configuration  |
+| **Affan Ilham Arsyila**      | `L200234024`     | Authentication, Profile, Audio Playback, Bookmarks, Salat Hook, Documentation |
 
-1. Use Expo Router for navigation.
-2. Build authentication and user management using Clerk.
-3. Integrate and consume third-party APIs.
-4. Use EAS for building and deployment workflows.
-5. Deliver a standalone mobile app that runs without connecting to the Expo development server.
 
-## Task
+_(Silakan lengkapi tabel di atas sesuai dengan pembagian tugas kelompok Anda)_
 
-Build a MASA-inspired mobile application with Expo. Your app should replicate the overall structure and main user flows of the original application closely enough that users can recognize the product direction, while still using your own implementation and assets.
 
-Your group should study the app, identify its core screens and user journeys, then implement a working version with good UI structure, navigation, data flow, and deployable builds.
+---
 
-## Minimum Technical Requirements
 
-Your submission must satisfy all requirements below.
+## 📌 Project Overview
 
-### 1. Expo Project
 
-- The app must be built using Expo.
-- The codebase must be organized clearly and be runnable by the teaching team.
-- The repository must include all required configuration and setup instructions.
+Aplikasi ini adalah replika fungsional dan estetis dari MASA App dengan pendekatan desain premium modern (clean UI, glassmorphism tabs, and custom layouting). Aplikasi dibangun menggunakan **Expo SDK 54** dan **Expo 
+Router** untuk manajemen navigasi file-based yang mulus.
 
-### 2. Navigation with Expo Router
 
-- The app must use Expo Router.
-- Navigation must include multiple screens.
-- Navigation structure should be meaningful and suitable for the app flow.
-- Use layouts, nested routes, tabs, stacks, or modal routes where appropriate.
+Aplikasi ini mendukung mode **Online Autentikasi** menggunakan **Clerk** maupun **Mock Keyless Mode** (lokal offline fallback) agar mempermudah pengujian oleh tim penguji tanpa keharusan setup Clerk API key terlebih 
+dahulu.
 
-### 3. Third-Party API Integration
 
-### 3. Authentication and User Management with Clerk
+---
 
-- The app must use Clerk for authentication and user management.
-- Users must be able to sign up, sign in, and sign out.
-- The app must include protected routes or protected screens for authenticated users.
-- The app must display basic user account information for the signed-in user.
-- Session state must be handled correctly across the app.
 
-Examples of acceptable user management features:
+## 📸 Screenshots Aplikasi
 
-- Sign up and sign in flow
-- Persistent authenticated session
-- Profile or account screen
-- Access control for authenticated-only screens
 
-### 4. Third-Party API Integration
+Berikut adalah tampilan antarmuka dari beberapa halaman utama aplikasi MASA App Clone:
 
-- The app must use at least one real third-party API.
-- The API must be meaningfully integrated into the app experience.
-- Loading, success, and error states must be handled properly.
-- Data must be displayed in a usable and readable way.
 
-Clerk does not count as the third-party API requirement for this section. You must integrate at least one additional external API beyond authentication.
+|                 Bookmark                 |                 Kalender                 |                          Konverter Kalender                          |                Profil                 |
+| :--------------------------------------: | :--------------------------------------: | :------------------------------------------------------------------: | :-----------------------------------: |
+| ![Bookmark](documentation/bookmark.jpeg) | ![Kalender](documentation/calendar.jpeg) | ![Konverter Kalender](<documentation/calendar-converter.jpeg .jpeg>) | ![Profil](documentation/profile.jpeg) |
 
-Examples of acceptable API usage:
 
-- News, content, or media API
-- Maps, location, weather, or place data
-- Recommendation, catalog, or commerce API
-- Any other external API approved by the instructor
+|                 Al-Qur'an                        |               Detail Al-Qur'an           |                          Kompas Kiblat                               |                interface doa          |
+| :----------------------------------------------: | :--------------------------------------: | :------------------------------------------------------------------: | :-----------------------------------: |
+| ![Al-Qur'an](documentation/surah.jpeg) | ![Detail Al-Qur'an](documentation/surah-detail.jpeg) | ![Kiblat](<documentation/kiblat.jpeg>) | ![Doa](documentation/doa.jpeg) |
 
-### 5. EAS Usage
 
-- The project must be configured for EAS.
-- Your repository must include the relevant EAS configuration files.
-- Your group must produce at least one standalone build using EAS.
-- The build process should be documented in the repository.
+|                 Detail Doa                 |                 Jadwal Shalat                 |
+| :--------------------------------------: | :---------------------------------------------: | 
+| ![Detail Doa](documentation/doa-details.jpeg) | ![Shalat](documentation/prayer.jpeg)       |
 
-### 6. Standalone App Delivery
 
-- The final app must run without the Expo development server.
-- The teaching team must be able to install or access a standalone build.
-- A development-only submission is not sufficient.
+---
 
-Acceptable submission evidence includes:
 
-- Android APK or Android internal distribution build
-- EAS build link
-- iOS build link or TestFlight link, if available
-- Clear installation instructions for the delivered build
+## ✨ Fitur-Fitur yang Diimplementasikan
 
-## Functional Expectations
 
-Your app should include a realistic set of features inspired by the MASA app. The exact scope is up to your group, but the app should feel complete rather than a collection of disconnected screens.
+Berikut adalah fitur utama yang berhasil diintegrasikan di dalam aplikasi:
 
-MASA is a Muslim lifestyle application that provides practical worship-related features such as prayer schedules, qibla direction, a digital Al-Qur'an with tajwid support, daily prayers, and other worship guidance. The app is developed by Muhammadiyah Software Labs with a focus on supporting Muslim users through moderation, usability, and accuracy.
 
-The features below are recommended because they are aligned with the real MASA app. They are not all mandatory, but your group is encouraged to use them as inspiration when defining project scope.
+1. **Dashboard Utama (Beranda)**
+   - Greeting dinamis menyesuaikan status login pengguna (_"Assalamualaikum [Nama]"_ atau _"Assalamualaikum Tamu"_).
+   - Widget Salat Premium dengan countdown real-time ke jadwal salat berikutnya serta ilustrasi grafis lintasan matahari & awan.
+   - Pilihan lokasi jadwal salat yang dapat disesuaikan secara manual maupun otomatis menggunakan GPS.
+   - Widget Kalender Islam & Masehi yang dapat ditoggle secara instan.
+   - Kotak "Pesan Hari Ini" (Daily Ayat Quote) menampilkan teks Arab, transliterasi, dan terjemahan Indonesia (QS. Al-Insyirah: 6).
+   - Shortcut akses cepat ke 4 menu utama: Salat, Al-Quran, Doa, dan Kalender.
 
-Suggested expectations:
 
-- Splash or landing experience
-- Authentication flow with Clerk
-- Home screen
-- Content listing or dashboard screen
-- Detail screen
-- User interaction flow such as save, bookmark, register, filter, search, or similar
-- Profile, settings, or account-related screen
+2. **Jadwal Salat & Waktu Salat Detail (`app/salat.tsx`)**
+   - Menampilkan 6 waktu salat: Subuh, Terbit, Zuhur, Asar, Magrib, dan Isya.
+   - Perhitungan jadwal salat dinamis berdasarkan tanggal yang dipilih (menggunakan formula sinusoidal variance untuk mensimulasikan pergeseran waktu secara alami).
+   - Penandaan otomatis untuk waktu salat yang sudah terlewati (green checkmark indicator).
+   - Integrasi shortcut ke halaman pencarian arah kiblat.
 
-Recommended MASA-inspired features:
 
-- Prayer schedule display
-- Qibla direction feature
-- Digital Al-Qur'an screen with tajwid-friendly presentation
-- Daily prayers or doa collection
-- Worship guidance or Islamic lifestyle content
-- Location-aware religious utility feature, if relevant to your app design
+3. **Kompas Arah Kiblat (`app/kiblat.tsx`)**
+   - Target sudut Kiblat diatur khusus untuk wilayah Indonesia (~294° derajat searah jarum jam dari utara).
+   - **Sensor Otomatis**: Menggunakan sensor `Magnetometer` (`expo-sensors`) untuk melacak arah hadap ponsel secara real-time.
+   - **Mode Simulasi Manual**: Bila sensor magnetometer tidak tersedia (misal di Emulator/Simulator), aplikasi menyediakan fallback interaktif menggunakan gesture geser/drag (`PanResponder`) pada piringan kompas untuk 
+meluruskan jarum ke arah Ka'bah.
+   - Visualisasi pin Ka'bah yang menyala hijau saat piringan kompas berhasil diarahkan dengan presisi (toleransi kesalahan ±6° derajat).
 
-You may adjust the feature set based on your interpretation of the reference app, but your implementation must be coherent and substantial.
 
-## GitHub Classroom Submission
+4. **Al-Qur'an Digital (`app/(tabs)/quran.tsx` & `app/surah/[id].tsx`)**
+   - **Daftar Surah**: Memuat seluruh 114 surah lengkap dari API eksternal secara asinkron dengan fitur pencarian filter instan (berdasarkan nama latin surah atau arti surah).
+   - **Halaman Detail Surah**: Menampilkan seluruh ayat surah dengan visualisasi tipografi Arab yang nyaman dibaca, transliterasi Latin, serta terjemahan bahasa Indonesia per ayat.
 
-Each group must accept the assignment using the GitHub Classroom link provided by the instructor.
 
-### Required Workflow
+5. **Kumpulan Doa Harian (`app/doa/`)**
+   - Halaman indeks berisi grid kategori doa (seperti doa ibadah, doa aktivitas harian, doa keluarga, dll.) dilengkapi search bar global untuk mencari doa tertentu.
+   - Modal popup detail doa yang menampilkan teks Arab tulisan besar, transliterasi Latin, terjemahan Indonesia, keutamaan doa (Fadhilah), serta sumber referensi periwayatan doa.
 
-1. One member creates or accepts the group assignment in GitHub Classroom.
-2. All group members join the same group repository.
-3. The group uses the classroom repository as the main submission repository.
-4. All development work must be committed to that repository.
 
-### Repository Requirements
+6. **Kalender Islami & Konverter Tanggal (`app/kalender.tsx`)**
+   - Tampilan grid kalender bulanan yang memetakan tanggal Masehi sekaligus tanggal Hijriah di dalam sel tanggal yang sama.
+   - Penandaan otomatis untuk hari-hari besar Islam (Idul Fitri, Idul Adha, Tahun Baru Hijriah, Maulid Nabi, dll.) dengan dot indikator merah.
+   - **Konverter Tanggal Dua Arah**: Halaman utilitas untuk mengonversi tanggal Masehi ke Hijriah dan sebaliknya secara matematis menggunakan perhitungan tabulasi algoritma Julian Day.
+   - Detail list hari besar Islam dalam tahun tersebut lengkap dengan konversi tanggal masehinya.
 
-Your GitHub Classroom repository must include:
 
-- Complete source code
-- A clear commit history showing group contribution
-- `README.md` with setup, build, and submission instructions
-- `app/` route structure or equivalent Expo Router setup
-- Clerk integration and environment setup instructions
-- `eas.json` and related Expo/EAS configuration
+7. **Sistem Bookmark & Progress Baca (`app/(tabs)/bookmark.tsx`)**
+   - Pengelompokan kategori bookmark (Semua, Al-Quran, EventMu, Berita).
+   - Kartu progress membaca Al-Qur'an terakhir (menampilkan persentase progress membaca surah).
+   - Ilustrasi empty state yang interaktif untuk bookmark kosong.
 
-## Deliverables
 
-Submit all of the following in your GitHub Classroom repository:
+8. **Profil Pengguna & Pusat Bantuan (`app/(tabs)/profile.tsx`)**
+   - Integrasi data nama lengkap dan email pengguna yang aktif login melalui Clerk.
+   - Akses cepat menuju menu Informasi Pribadi, Pengaturan Notifikasi, Bantuan Helpdesk via email, Pedoman Aplikasi, serta tombol Log-Out.
 
-1. The complete Expo project source code.
-2. A `README.md` that explains:
-   - Group members and student IDs
-   - Project overview
-   - Features implemented
-   - Clerk authentication and user management flow
-   - APIs used
-   - How to run the app locally
-   - How to build the app with EAS
-   - How to access/install the standalone build
-3. A standalone build deliverable.
-4. Screenshots or short screen recordings of the app.
-5. A short explanation of which parts of the original MASA app were implemented and what adaptations were made.
 
-## Recommended Team Structure
+---
 
-Groups should distribute work clearly. A healthy division of work may include:
 
-- Navigation and app architecture
-- UI implementation and reusable components
-- API integration and state handling
-- Build, release, testing, and documentation
+## 🔒 Clerk Authentication & User Management Flow
 
-All members are expected to contribute meaningfully.
 
-## Evaluation Criteria
+Aplikasi ini menggunakan **Clerk Expo** sebagai penyedia layanan autentikasi utama. Struktur flow login dibungkus di dalam provider kustom (`AppAuthProvider` di `@/hooks/use-app-auth`) untuk mengimplementasikan dual-mode:
 
-Your work will be evaluated based on the following:
 
-1. Correct use of Expo Router.
-2. Correct implementation of Clerk authentication and user management.
-3. Quality and relevance of third-party API integration.
-4. Correct EAS configuration and successful standalone build delivery.
-5. App completeness, polish, and usability.
-6. Code quality and project organization.
-7. Documentation quality.
-8. Evidence of meaningful team collaboration.
+```
+                  ┌──────────────────────────────┐
+                  │   Mulai Aplikasi (Layout)    │
+                  └──────────────┬───────────────┘
+                                 │
+                     Apakah ada Clerk Key?
+                                 │
+                   ┌─────────────┴─────────────┐
+                  Ya                          Tidak
+                   │                           │
+        ┌──────────┴──────────┐     ┌──────────┴──────────┐
+        │   Mode Clerk Aktif  │     │  Mode Simulasi/Mock │
+        └──────────┬──────────┘     └──────────┬──────────┘
+                   │                           │
+        • E-mail & Password Auth    • Simpan status login
+        • Google OAuth (WebBrowser)   di AsyncStorage.
+        • Email OTP (6 digit)       • Autentikasi instan
+        • Background OTP bypass*      untuk testing lokal.
+                   │                           │
+                   └─────────────┬─────────────┘
+                                 ▼
+                     ┌───────────────────────┐
+                     │ Beranda / Home Screen │
+                     └───────────────────────┘
+```
 
-## Submission Checklist
 
-Before the deadline, make sure your group has completed all items below:
+### Rincian Flow Autentikasi:
 
-- Joined the correct GitHub Classroom group repository
-- Added all group members to the README
-- Implemented navigation using Expo Router
-- Implemented authentication and user management using Clerk
-- Integrated at least one third-party API
-- Configured EAS successfully
-- Produced a standalone app build
-- Added setup and build instructions
-- Added screenshots or demo evidence
-- Verified the repository is accessible and complete
 
-## Deadline
+1. **Pendaftaran Akun (Sign Up)**:
+   - Pengguna memasukkan Email, Username, Nomor Telepon, dan Password.
+   - **Penanganan Nomor Telepon**: Terdapat validasi E.164. Karena Clerk test tier terkadang membatasi kode negara Indonesia (+62), sistem secara otomatis memetakan nomor telepon Indonesia ke nomor simulasi test-tier 
+Amerika Serikat (`+120255501XX`) secara aman di background.
+   - **Verifikasi OTP**: Kode verifikasi OTP dikirimkan ke email pengguna. Pengguna memasukkan kode 6 digit untuk mengaktifkan akun. Jika pendaftaran memerlukan OTP telepon, sistem secara otomatis memasukkan bypass OTP 
+kode default (`424242`) untuk nomor simulasi di background agar proses verifikasi tidak terhambat.
+2. **Masuk Akun (Sign In)**:
+   - Login konvensional menggunakan email & password.
+   - **Google OAuth**: Mendukung login satu klik menggunakan akun Google. Memanfaatkan `expo-web-browser` dan `expo-linking` untuk menghandle siklus redirect autentikasi secara native.
+3. **Mock Mode (Fallback)**:
+   - Apabila Clerk Publishable Key (`EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`) tidak dideklarasikan di file `.env`, aplikasi akan mengaktifkan _Mock Mode_.
+   - Semua fungsi sign-in, sign-up, dan sign-out disimulasikan menggunakan penyimpanan lokal `AsyncStorage` dengan key `mock_signed_in`.
+   - Mengizinkan tester membuka seluruh halaman terproteksi dengan kredensial dummy apapun.
 
-Submission deadline: **8 June, 23:59**
 
-Late submissions follow the course policy.
+---
 
-## Notes
 
-- Start early. EAS build setup and mobile deployment usually take longer than expected.
-- Test your app on a real device whenever possible.
-- Keep your scope realistic. A smaller, well-finished app is better than a large but incomplete one.
-- Make regular commits with meaningful messages.
+## 🔌 API Eksternal yang Digunakan
+
+
+Aplikasi ini memanfaatkan beberapa API dan pustaka eksternal untuk menyajikan data secara real-time:
+
+
+1. **API Al-Qur'an Digital**:
+   - Sumber: `https://equran.id`
+   - Endpoint List Surah: `https://equran.id/api/v2/surat` (Method: `GET`)
+   - Endpoint Detail Surah & Ayat: `https://equran.id/api/v2/surat/${id}` (Method: `GET`)
+2. **Reverse Geocoding (Location API)**:
+   - Menggunakan modul `expo-location`.
+   - Mengonversi koordinat lintang/bujur (Latitude/Longitude) perangkat dari sensor GPS menjadi nama wilayah/kota di Indonesia menggunakan API geocoding bawaan Expo secara aman.
+3. **Sensor Magnetometer**:
+   - Menggunakan modul `expo-sensors` (`Magnetometer`) untuk melacak arah medan magnet bumi guna menentukan arah utara kompas secara real-time.
+
+
+---
+
+
+## 🚀 Cara Menjalankan Aplikasi Secara Lokal
+
+
+Ikuti langkah-langkah di bawah ini untuk menjalankan project di komputer Anda:
+
+
+### 1. Prasyarat
+
+
+Pastikan komputer Anda sudah terinstal:
+
+
+- **Node.js** (versi 18 atau yang lebih baru)
+- **Git**
+- Aplikasi **Expo Go** pada ponsel fisik Anda (tersedia di Play Store & App Store), atau Emulator Android Studio / Xcode Simulator yang sudah terkonfigurasi.
+
+
+### 2. Instalasi Dependensi
+
+
+Clone repository ini, masuk ke direktori project, lalu jalankan instalasi package via NPM:
+
+
+```bash
+npm install
+```
+
+
+### 3. Konfigurasi Environment Variables
+
+
+1. Copy file `.env.example` menjadi `.env` di root direktori project:
+   ```bash
+   cp .env.example .env
+   ```
+2. Buka file `.env` dan masukkan API Key Clerk Anda jika ingin menguji fitur autentikasi asli:
+   ```env
+   EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_clerk_publishable_key
+   ```
+   _(Bila dibiarkan default/kosong, aplikasi secara otomatis berjalan menggunakan Mock Mode)_
+
+
+### 4. Menjalankan Development Server
+
+
+Mulai server Expo development dengan menjalankan perintah:
+
+
+```bash
+npm run start
+```
+
+
+Atau menggunakan CLI Expo langsung:
+
+
+```bash
+npx expo start
+```
+
+
+### 5. Membuka Aplikasi
+
+
+Setelah terminal menampilkan QR Code:
+
+
+- **Ponsel Android**: Buka aplikasi **Expo Go**, lalu pilih menu **Scan QR Code**.
+- **Ponsel iOS**: Buka aplikasi kamera bawaan iOS, arahkan ke QR Code di terminal, lalu klik tautan Expo Go yang muncul.
+- **Emulator/Simulator**: Tekan tombol `a` di terminal untuk membuka Android Emulator, atau tekan `i` untuk iOS Simulator.
+
+
+---
+
+
+## 📦 Cara Build Aplikasi dengan EAS (Expo Application Services)
+
+
+EAS Build adalah layanan cloud dari Expo untuk mengompilasi kode React Native menjadi file biner standalone (APK/AAB untuk Android dan IPA untuk iOS).
+
+
+### 1. Instalasi EAS CLI secara Global
+
+
+Pasang utilitas EAS CLI pada komputer Anda:
+
+
+```bash
+npm install -g eas-cli
+```
+
+
+### 2. Login ke Akun Expo
+
+
+Masuk menggunakan akun Expo Anda (daftarkan diri terlebih dahulu di [expo.dev](https://expo.dev/) jika belum punya):
+
+
+```bash
+eas login
+```
+
+
+### 3. Konfigurasi Project untuk EAS
+
+
+Inisialisasi EAS pada project Anda (ini akan meminta Anda memilih akun/organisasi serta membuat file konfigurasi `eas.json` di root folder):
+
+
+```bash
+eas build:configure
+```
+
+
+### 4. Contoh Konfigurasi `eas.json` yang Direkomendasikan
+
+
+Pastikan isi file `eas.json` Anda mencakup profil _preview_ (untuk menghasilkan APK) dan _production_:
+
+
+```json
+{
+  "cli": {
+    "version": ">= 10.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {}
+  },
+  "submit": {
+    "production": {}
+  }
+}
+```
+
+
+### 5. Menjalankan Build Standalone
+
+
+Jalankan kompilasi pada server cloud Expo dengan perintah berikut:
+
+
+- **Build Android APK (Preview/Installable)**:
+  ```bash
+  eas build --platform android --profile preview
+  ```
+- **Build iOS (Preview/Simulator)**:
+  ```bash
+  eas build --platform ios --profile preview
+  ```
+- **Build Semua Platform Sekaligus (Production)**:
+  ```bash
+  eas build --platform all --profile production
+  ```
+
+
+_Catatan: Proses kompilasi cloud biasanya membutuhkan waktu 5-15 menit tergantung antrean server Expo._
+
+
+---
+
+
+## 📲 Cara Mengakses & Menginstal Standalone Build
+
+
+Setelah proses EAS Build selesai, Anda dapat mengunduh dan memasang aplikasi tersebut di ponsel dengan metode berikut:
+
+
+### 1. Unduh Melalui Link Dashboard Expo
+
+
+1. Di akhir proses EAS Build di terminal, Anda akan diberikan sebuah tautan web (misalnya: `https://expo.dev/artifacts/eas/...`).
+2. Buka link tersebut di browser komputer atau ponsel Anda.
+3. Klik tombol **Download** untuk mengunduh file biner:
+   - **Android**: File `.apk` (Preview) atau `.aab` (Production).
+   - **iOS**: Tautan instalasi _Ad-Hoc / TestFlight_.
+
+
+### 2. Instalasi Melalui QR Code (Sangat Direkomendasikan)
+
+
+1. Setelah build selesai, terminal atau halaman dashboard Expo akan memunculkan sebuah **QR Code instalasi**.
+2. Scan QR Code tersebut menggunakan kamera ponsel Anda.
+3. Anda akan diarahkan ke halaman web Expo untuk mengunduh aplikasi secara langsung ke ponsel.
+4. **Android (Khusus APK)**:
+   - Setelah file `.apk` selesai diunduh, buka file tersebut.
+   - Jika muncul peringatan keamanan _"Blocked by Play Protect"_ atau _"Install from Unknown Sources"_, pilih **Install Anyway** / Izinkan instalasi dari sumber tidak dikenal.
+   - Aplikasi kini terpasang secara permanen di ponsel Anda dan dapat dijalankan secara mandiri tanpa terhubung ke komputer/development server.

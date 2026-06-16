@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useAuth as useClerkAuth } from "@clerk/clerk-expo";
+import { useAuth as useClerkAuth } from "@clerk/expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface AuthContextType {

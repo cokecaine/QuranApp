@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Image } from "expo-image";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -42,9 +43,11 @@ export default function WelcomeScreen() {
       <View style={styles.centerContainer}>
         <View style={styles.logoRow}>
           {/* MASA Branding Logo */}
-          <View style={styles.logoCircle}>
-            <View style={styles.logoDot} />
-          </View>
+          <Image 
+            source={require('@/assets/icon-app.svg')} 
+            style={{ width: 60, height: 60 }} 
+            contentFit="contain" 
+          />
           <Text style={styles.logoText}>MASA</Text>
         </View>
       </View>
@@ -119,27 +122,6 @@ const styles = StyleSheet.create({
   logoRow: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  logoCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 5,
-    borderColor: "#0B1A30",
-    position: "relative",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: "#2F58E8",
-    position: "absolute",
-    bottom: -8,
-    left: -4,
-    borderWidth: 2.5,
-    borderColor: "#FFFFFF",
   },
   logoText: {
     fontSize: 38,

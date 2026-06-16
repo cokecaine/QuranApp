@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
-import { useSignIn, useOAuth } from "@clerk/clerk-expo";
+import { useSignIn, useOAuth, useClerk, useAuth } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
@@ -139,7 +139,9 @@ function SignInForm({
 
 // Clerk Sign In Logic
 function ClerkSignInScreen() {
-  const { signIn, setActive, isLoaded } = useSignIn();
+  const { isLoaded } = useAuth();
+  const { signIn } = useSignIn();
+  const { setActive } = useClerk();
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
   const router = useRouter();
 
@@ -165,13 +167,15 @@ function ClerkSignInScreen() {
     setError("");
 
     try {
-      const completeSignIn = await signIn.create({
+      await signIn.create({
         identifier: emailAddress,
         password,
       });
 
-      await setActive({ session: completeSignIn.createdSessionId });
-      router.replace("/(tabs)/home");
+      if (signIn.status === "complete") {
+        await setActive({ session: signIn.createdSessionId });
+        router.replace("/(tabs)/home");
+      }
     } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
       if (err.errors && Array.isArray(err.errors)) {

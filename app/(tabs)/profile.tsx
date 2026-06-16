@@ -15,7 +15,7 @@ import { useRouter } from "expo-router";
 import { Header } from "@/components/ui/header";
 import { Card } from "@/components/ui/card";
 import { useAppAuth, hasClerkKey } from "@/hooks/use-app-auth";
-import { useUser } from "@clerk/clerk-expo";
+import { useUser } from "@clerk/expo";
 
 interface ProfileItem {
   id: string;

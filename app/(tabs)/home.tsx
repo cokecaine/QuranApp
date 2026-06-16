@@ -18,8 +18,9 @@ import { Ionicons, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-ico
 import { useRouter } from "expo-router";
 import { Card } from "@/components/ui/card";
 import { useAppAuth, hasClerkKey } from "@/hooks/use-app-auth";
-import { useUser } from "@clerk/clerk-expo";
+import { useUser } from "@clerk/expo";
 import { useSalatSchedule } from "@/hooks/use-salat-schedule";
+import { Image } from "expo-image";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -208,9 +209,11 @@ export default function HomeScreen() {
             </Text>
             <View style={styles.logoRow}>
               <View style={styles.logoIcon}>
-                <View style={styles.logoCircle}>
-                  <View style={styles.logoDot} />
-                </View>
+                <Image 
+                  source={require('@/assets/icon-app.svg')} 
+                  style={{ width: 22, height: 22 }} 
+                  contentFit="contain" 
+                />
               </View>
               <Text style={styles.logoText}>MASA</Text>
             </View>

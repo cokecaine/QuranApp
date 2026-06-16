@@ -1,5 +1,5 @@
 import { Stack, useRouter, useSegments } from "expo-router";
-import { ClerkProvider } from "@clerk/clerk-expo";
+import { ClerkProvider } from "@clerk/expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
 import * as WebBrowser from "expo-web-browser";

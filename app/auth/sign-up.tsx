@@ -9,7 +9,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
-import { useSignUp, useOAuth } from "@clerk/clerk-expo";
+import { useSignUp, useOAuth, useClerk, useAuth } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
@@ -223,7 +223,9 @@ function SignUpForm({
 
 // Clerk Sign Up logic
 function ClerkSignUpScreen() {
-  const { isLoaded, signUp, setActive } = useSignUp();
+  const { isLoaded } = useAuth();
+  const { signUp } = useSignUp();
+  const { setActive } = useClerk();
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
   const router = useRouter();
 
@@ -287,7 +289,7 @@ function ClerkSignUpScreen() {
         phoneNumber: formattedPhone,
       });
 
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      await signUp.verifications.sendEmailCode();
       setPendingVerification(true);
     } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
@@ -322,7 +324,7 @@ function ClerkSignUpScreen() {
     setError("");
 
     try {
-      let completeSignUp = await signUp.attemptEmailAddressVerification({
+      await signUp.verifications.verifyEmailCode({
         code,
       });
 
@@ -332,22 +334,22 @@ function ClerkSignUpScreen() {
       // in the background using Clerk's standard test-tier phone OTP (424242) since we mapped 
       // the phone number to a simulated US number (+1202555XXXX).
       if (
-        completeSignUp.status === "missing_requirements" &&
-        completeSignUp.unverifiedFields.includes("phone_number")
+        signUp.status === "missing_requirements" &&
+        signUp.unverifiedFields.includes("phone_number")
       ) {
         console.log("Phone number verification required. Attempting background verification...");
-        await signUp.preparePhoneNumberVerification({ strategy: "phone_code" });
-        completeSignUp = await signUp.attemptPhoneNumberVerification({
+        await signUp.verifications.sendPhoneCode();
+        await signUp.verifications.verifyPhoneCode({
           code: "424242",
         });
       }
 
-      if (completeSignUp.status === "complete") {
-        await setActive({ session: completeSignUp.createdSessionId });
+      if (signUp.status === "complete") {
+        await setActive({ session: signUp.createdSessionId });
         router.replace("/(tabs)/home");
       } else {
-        console.error(JSON.stringify(completeSignUp, null, 2));
-        setError("Proses pendaftaran belum selesai. Status: " + completeSignUp.status);
+        console.error(JSON.stringify(signUp, null, 2));
+        setError("Proses pendaftaran belum selesai. Status: " + signUp.status);
       }
     } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
