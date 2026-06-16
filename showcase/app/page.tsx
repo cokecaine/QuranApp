@@ -57,8 +57,8 @@ export default function Home() {
         <p style={{ fontSize: 15, color: "var(--text-dim)", lineHeight: 1.7, marginBottom: 20 }}>
           This project is a functional clone of the{" "}
           <strong style={{ color: "var(--text)" }}>MASA App</strong> (Muslim Lifestyle Application
-          by Muhammadiyah Software Labs), built as an assignment for the Apple Academy Mobile
-          Computing program at UMS. The goal was to replicate its core Islamic utility features —
+          by Muhammadiyah Software Labs), built as an assignment for the Mobile
+          Computing course at UMS. The goal was to replicate its core Islamic utility features —
           prayer schedules, Al-Quran, Qibla compass, duas, and Islamic calendar — while applying
           professional development practices: feature-branch workflow, pull request reviews, and
           EAS cloud builds.
